@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import { NAV_LINKS } from "@/data/mock";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -43,6 +46,13 @@ export default function Navbar() {
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-white-pure transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
+          <Link
+            href={user ? "/perfil" : "/auth/login"}
+            className="flex items-center gap-2 text-xs tracking-widest uppercase border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <User size={14} />
+            {user ? "PERFIL" : "ENTRAR"}
+          </Link>
         </nav>
 
         {/* Mobile Menu Button */}

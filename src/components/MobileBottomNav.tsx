@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User, Image as ImageIcon, Music, DollarSign, Home } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navItems = [
     { label: "Inici", href: "/", icon: <Home size={24} /> },
-    { label: "Perfil", href: "/#focus", icon: <User size={24} /> },
+    { label: "Perfil", href: user ? "/perfil" : "/auth/login", icon: <User size={24} /> },
     { label: "Galeria", href: "/galeria", icon: <ImageIcon size={24} /> },
     { label: "Mashups", href: "/#mashups", icon: <Music size={24} /> },
     { label: "Preus", href: "/preus", icon: <DollarSign size={24} /> },

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { GALLERY_IMAGES } from "@/data/mock";
+import { EVENTS } from "@/data/mock";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 50 },
@@ -10,6 +10,9 @@ const fadeUp = {
 };
 
 export default function VisualGallery() {
+  // Extract images from all events for the home gallery
+  const galleryImages = EVENTS.flatMap(event => event.images).slice(0, 8);
+
   return (
     <section className="py-32 bg-[#050505] relative z-20">
       <div className="container mx-auto px-6 md:px-12 mb-16">
@@ -32,7 +35,7 @@ export default function VisualGallery() {
       {/* Gallery wrapper */}
       <div className="w-full relative">
         <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-6 md:px-12 lg:px-24 pb-8 w-full max-w-none">
-          {GALLERY_IMAGES.map((src, idx) => (
+          {galleryImages.map((src, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, scale: 0.9 }}

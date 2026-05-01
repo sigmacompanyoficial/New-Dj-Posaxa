@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 50 },
@@ -8,6 +11,59 @@ const fadeUp = {
 };
 
 export default function PreusPage() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    full_name: "",
+    phone: "",
+    email: "",
+    event_date: "",
+    event_time: "",
+    location: "",
+    duration: "",
+    attendees: "",
+    music_style: "",
+    comments: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const { error: submitError } = await supabase
+      .from("reservations")
+      .insert([
+        {
+          ...formData,
+          user_id: user?.id || null
+        }
+      ]);
+
+    if (submitError) {
+      setError(submitError.message);
+      setLoading(false);
+    } else {
+      setSuccess(true);
+      setLoading(false);
+      setFormData({
+        full_name: "",
+        phone: "",
+        email: "",
+        event_date: "",
+        event_time: "",
+        location: "",
+        duration: "",
+        attendees: "",
+        music_style: "",
+        comments: ""
+      });
+    }
+  };
+
   return (
     <div className="bg-[#050505] text-white min-h-screen selection:bg-white selection:text-black">
       {/* 
@@ -99,64 +155,162 @@ export default function PreusPage() {
               <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 md:p-12 backdrop-blur-sm">
                 <h2 className="text-2xl font-black uppercase tracking-tight mb-8">Sol·licitar Pressupost</h2>
                 
-                <form className="flex flex-col gap-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Nom i Cognoms / Entitat</label>
-                      <input type="text" placeholder="La teva entitat o nom" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
+                {success ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-20 h-20 bg-white text-black rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Telèfon</label>
-                      <input type="tel" placeholder="+34 000 000 000" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
+                    <h3 className="text-3xl font-black uppercase mb-2">Enviat amb èxit!</h3>
+                    <p className="text-gray-400">DJ Posaxa es posarà en contacte amb tu molt aviat.</p>
+                    <button 
+                      onClick={() => setSuccess(false)}
+                      className="mt-8 text-sm uppercase tracking-widest text-white border-b border-white/20 pb-1"
+                    >
+                      Enviar una altra sol·licitud
+                    </button>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl text-sm">
+                        {error}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Nom i Cognoms / Entitat</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={formData.full_name}
+                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                          placeholder="La teva entitat o nom" 
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Telèfon</label>
+                        <input 
+                          type="tel" 
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                          placeholder="+34 000 000 000" 
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Email</label>
-                    <input type="email" placeholder="exemple@correu.com" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Data</label>
-                      <input type="date" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" />
+                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Email</label>
+                      <input 
+                        type="email" 
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        placeholder="exemple@correu.com" 
+                        className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                      />
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Data</label>
+                        <input 
+                          type="date" 
+                          required
+                          value={formData.event_date}
+                          onChange={(e) => setFormData({...formData, event_date: e.target.value})}
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" 
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Hora d'Inici</label>
+                        <input 
+                          type="time" 
+                          required
+                          value={formData.event_time}
+                          onChange={(e) => setFormData({...formData, event_time: e.target.value})}
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" 
+                        />
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Hora d'Inici</label>
-                      <input type="time" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" />
+                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Ubicació / Població</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={formData.location}
+                        onChange={(e) => setFormData({...formData, location: e.target.value})}
+                        placeholder="Ex: Granollers, Barcelona..." 
+                        className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                      />
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Ubicació / Població</label>
-                    <input type="text" placeholder="Ex: Granollers, Barcelona..." className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Durada Aprox. (h)</label>
+                        <input 
+                          type="number" 
+                          required
+                          value={formData.duration}
+                          onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                          placeholder="Ex: 4" 
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Assistents Aprox.</label>
+                        <input 
+                          type="number" 
+                          required
+                          value={formData.attendees}
+                          onChange={(e) => setFormData({...formData, attendees: e.target.value})}
+                          placeholder="Ex: 150" 
+                          className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                        />
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Durada Aprox. (h)</label>
-                      <input type="number" placeholder="Ex: 4" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
+                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Estil Musical</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={formData.music_style}
+                        onChange={(e) => setFormData({...formData, music_style: e.target.value})}
+                        placeholder="Ex: Reggaeton, Techno, Èxits, Variat..." 
+                        className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" 
+                      />
                     </div>
+
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Assistents Aprox.</label>
-                      <input type="number" placeholder="Ex: 150" className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
+                      <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Comentaris / Detalls</label>
+                      <textarea 
+                        rows={4} 
+                        value={formData.comments}
+                        onChange={(e) => setFormData({...formData, comments: e.target.value})}
+                        placeholder="Explica'ns una mica més sobre la teva idea..." 
+                        className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors resize-none"
+                      ></textarea>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Estil Musical</label>
-                    <input type="text" placeholder="Ex: Reggaeton, Techno, Èxits, Variat..." className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors" />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Comentaris / Detalls</label>
-                    <textarea rows={4} placeholder="Explica'ns una mica més sobre la teva idea..." className="bg-transparent border-b border-white/20 pb-2 text-white focus:outline-none focus:border-white transition-colors resize-none"></textarea>
-                  </div>
-
-                  <button type="button" className="mt-8 px-10 py-5 bg-white text-black font-bold uppercase tracking-widest rounded-full hover:scale-[1.02] transition-transform duration-300 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                    Enviar Sol·licitud
-                  </button>
-                </form>
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="mt-8 px-10 py-5 bg-white text-black font-bold uppercase tracking-widest rounded-full hover:scale-[1.02] transition-transform duration-300 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] disabled:opacity-50"
+                    >
+                      {loading ? "Enviant..." : "Enviar Sol·licitud"}
+                    </button>
+                  </form>
+                )}
               </div>
             </motion.div>
 

@@ -1,74 +1,104 @@
-import { NavLink, Review } from "@/types";
-
-export const NAV_LINKS: NavLink[] = [
-  { label: "INICI", href: "/" },
-  { label: "EN QUÈ EM CENTRO", href: "/#focus" },
-  { label: "ESDEVENIMENTS", href: "/esdeveniments" },
-  { label: "GALERIA", href: "/galeria" },
-  { label: "OPINIONS", href: "/#opinions" },
-  { label: "PREUS", href: "/preus" },
-];
-
-export const STATS = [
-  { value: "10+", label: "EVENTS COMPLETATS" },
-  { value: "4K", label: "SEGUIDORS" },
-  { value: "100%", label: "SATISFACCIÓ" },
-  { value: "+10M", label: "VISUALITZACIONS" },
+export const NAV_LINKS = [
+  { label: "Inici", href: "/" },
+  { label: "Sobre Mi", href: "/#sobre-mi" },
+  { label: "Galeria", href: "/galeria" },
+  { label: "Esdeveniments", href: "/esdeveniments" },
+  { label: "Preus", href: "/preus" },
+  { label: "Contacte", href: "/perfil?tab=chat" },
 ];
 
 export const EVENTS = [
   {
-    id: "evt-1",
-    name: "CARNAVAL 2026",
-    description: "Una nit inoblidable a la NAUB1 de Granollers. Èxit total de públic i energia!",
-    image: "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0058.jpg",
+    id: "carnaval-2026",
+    title: "Carnaval 2026",
+    date: "Febrer 2026",
+    location: "Granollers",
+    description: "Una nit èpica de bogeria i ritmes festius al cor de la ciutat.",
+    image: "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg",
+    category: "Festa Major",
+    images: [
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0052.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0054.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0056.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0058.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0060.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0062.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0064.jpg",
+    ],
+    videos: [
+      "/Fotos/eventos/carnaval-2026/VID-20260214-WA0094.mp4",
+      "/Fotos/eventos/carnaval-2026/VID-20260214-WA0095.mp4"
+    ]
   },
   {
-    id: "evt-2",
-    name: "FESTA MAJOR 2025",
-    description: "Disco Inferno XS: l'espectacle que va marcar l'estiu a Granollers.",
-    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg",
+    id: "disco-inferno-2025",
+    title: "Disco Inferno XS",
+    date: "2025",
+    location: "PNC",
+    description: "Sessió de música disco, funk i hits atemporals que van fer cremar la pista.",
+    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-0.jpg",
+    category: "Clubbing",
+    images: [
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-0.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-2.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-3.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-10.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-11.jpg",
+    ]
   },
   {
-    id: "evt-3",
-    name: "GRA JOVE",
-    description: "Actuació destacada al MusiKnviu. Energia jove i talent emergent.",
-    image: "/Fotos/dj-posaxa-sessio-inici-2.jpg",
+    id: "gra-jove-2025",
+    title: "Gra Jove Musiknviu",
+    date: "Juliol 2025",
+    location: "Granollers",
+    description: "Energia pura i connexió total amb el públic jove al festival Musiknviu.",
+    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-15.jpg", // Placeholder until video cover is fixed
+    category: "Festival",
+    images: [
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-16.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-17.jpg",
+    ],
+    videos: [
+      "/Fotos/eventos/gra-jove-musiknviu-2025/IMG_2443.mov",
+      "/Fotos/eventos/gra-jove-musiknviu-2025/IMG_2445.mov"
+    ]
+  }
+];
+
+export const REVIEWS = [
+  {
+    author: "Marc R.",
+    text: "En Pol sap llegir la pista com ningú. Va convertir la nostra festa en un record inoblidable.",
   },
+  {
+    author: "Laura G.",
+    text: "Professionalitat des del primer minut. La music va ser perfecta per a totes les edats.",
+  }
+];
+
+export const STATS = [
+  { label: "Anys d'Experiència", value: "3+" },
+  { label: "Sessió Realitzades", value: "+100" },
+  { label: "Assistents Totals", value: "10K+" },
+  { label: "Satisfacció", value: "100%" },
 ];
 
 export const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "CONTACTA",
-    desc: "Explica'm la teva idea. Parlem del tipus d'esdeveniment, data i les teves preferències musicals.",
+    title: "Reserva",
+    desc: "Contacta amb nosaltres a través del formulari de reserves o xat directe per explicar-nos el teu projecte."
   },
   {
     step: "02",
-    title: "PLANIFICACIÓ",
-    desc: "Dissenyem la playlist i l'estructura de la sessió. Tot personalitzat al 100% per tu.",
+    title: "Planificació",
+    desc: "Definim l'estil musical, la durada i l'equip tècnic necessari segons l'espai i el públic."
   },
   {
     step: "03",
-    title: "LA FESTA",
-    desc: "Gaudeix sense preocupacions. Jo m'encarrego de la música, l'animació i que tothom balli.",
-  },
-];
-
-export const REVIEWS: Review[] = [
-  {
-    text: "Va ser una nit increïble. El DJ va saber llegir el públic perfectament i no vam parar de ballar!",
-    author: "Albert P",
-  },
-];
-
-export const GALLERY_IMAGES = [
-  "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0058.jpg",
-  "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg",
-  "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0037.jpg",
-  "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-4.jpg",
-  "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0064.jpg",
-  "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-2.jpg",
-  "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0001.jpg",
-  "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-8.jpg",
+    title: "Sessió",
+    desc: "El dia de l'esdeveniment, ens encarreguem de tot perquè tu només hagis de gaudir de la festa."
+  }
 ];

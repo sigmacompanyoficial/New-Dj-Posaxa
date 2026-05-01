@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { NAV_LINKS } from "@/data/mock";
 
 export default function Footer() {

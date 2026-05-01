@@ -40,22 +40,17 @@ export default function EventsGrid() {
               variants={fadeUp}
               className="group cursor-pointer bg-white/[0.02] border border-white/10 rounded-[2rem] p-6 hover:bg-white/[0.04] transition-colors flex flex-col"
             >
-              <div className="relative aspect-[4/3] mb-6 overflow-hidden rounded-[1.5rem] border border-white/5">
+              <div className="relative aspect-[16/9] mb-6 overflow-hidden rounded-[1.5rem] border border-white/5">
                 <Image
-                  src={event.image}
-                  alt={event.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                   src={event.image}
+                   alt={event.title}
+                   fill
+                   className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
-                {index === 0 && (
-                  <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 text-white-pure px-3 py-1 text-[10px] font-bold tracking-widest uppercase rounded-full">
-                    L'ÚLTIM!
-                  </div>
-                )}
               </div>
               <div className="flex flex-col gap-2 flex-1">
                 <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white-pure">
-                  {event.name}
+                  {event.title}
                 </h3>
                 <p className="text-sm text-gray-400 leading-relaxed mb-4 flex-1">
                   {event.description}

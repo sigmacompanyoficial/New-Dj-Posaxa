@@ -72,6 +72,7 @@ export default function EditorialSection() {
                 src="/Fotos/dj-posaxa-biografia.jpeg"
                 alt="DJ Posaxa Biografia"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
               />
               

@@ -45,15 +45,27 @@ export default function Hero() {
           Experiències musicals inoblidables. Connexió pura amb el públic.
         </motion.p>
 
-        <motion.a
-          href="#contact"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="px-8 py-4 md:px-10 md:py-5 bg-white-pure text-black-deep font-bold uppercase tracking-widest rounded-full hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-        >
-          Reserva Ara
-        </motion.a>
+        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+          <motion.a
+            href="/preus"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="px-8 py-4 md:px-10 md:py-5 bg-white-pure text-black-deep font-bold uppercase tracking-widest rounded-full hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+          >
+            Reserva Ara
+          </motion.a>
+          
+          <motion.a
+            href="/perfil?tab=chat"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="px-8 py-4 md:px-10 md:py-5 bg-white-pure/10 backdrop-blur-md border border-white-pure/20 text-white-pure font-bold uppercase tracking-widest rounded-full hover:bg-white-pure/20 transition-all duration-300"
+          >
+            Contacte Directe
+          </motion.a>
+        </div>
       </div>
 
       {/* Animated scroll indicator */}
