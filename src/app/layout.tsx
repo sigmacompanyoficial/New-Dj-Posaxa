@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/Fotos/dj-posaxa-logo.png",
     apple: "/Fotos/dj-posaxa-logo.png",
+  },
+  verification: {
+    google: "2jHpnfOH-dy0mc6c6VkefIaXKW1YkmFfvC5kVyKylMs",
   }
 };
 

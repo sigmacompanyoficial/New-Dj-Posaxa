@@ -67,7 +67,7 @@ export default function LoginPage() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-sm font-bold uppercase text-gray-400 block">Contrasenya</label>
-              <Link href="/auth/forgot-password" size={12} className="text-[10px] text-gray-500 hover:text-white uppercase font-bold tracking-widest transition-colors">Has oblidat la contrasenya?</Link>
+              <Link href="/auth/forgot-password" className="text-[10px] text-gray-500 hover:text-white uppercase font-bold tracking-widest transition-colors">Has oblidat la contrasenya?</Link>
             </div>
             <input 
               type="password" 
