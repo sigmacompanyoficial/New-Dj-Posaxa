@@ -28,6 +28,7 @@ export default function AdminPanel() {
   const [fetching, setFetching] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [adminError, setAdminError] = useState<string | null>(null);
   
   // States for selection
   const [selectedChatUser, setSelectedChatUser] = useState<string | null>(null);
@@ -71,51 +72,72 @@ export default function AdminPanel() {
 
   const fetchAdminData = async () => {
     setFetching(true);
-    const { data: resData } = await supabase.from("reservations").select("*").order("created_at", { ascending: false });
-    if (resData) setReservations(resData);
+    setAdminError(null);
 
-    const { data: msgData } = await supabase.from("messages").select("*").order("created_at", { ascending: false });
-    if (msgData) setMessages(msgData);
-    setFetching(false);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error("Sessio caducada. Torna a iniciar sessio.");
+      }
+
+      const response = await fetch("/api/admin/data", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "No s'han pogut carregar les dades admin.");
+      }
+
+      setReservations(payload.reservations ?? []);
+      setMessages(payload.messages ?? []);
+    } catch (err: any) {
+      setReservations([]);
+      setMessages([]);
+      setAdminError(err.message);
+    } finally {
+      setFetching(false);
+    }
   };
 
   const updateStatus = async (id: string, status: string) => {
-    const reservation = reservations.find(r => r.id === id);
-    const { error } = await supabase.from("reservations").update({ status }).eq("id", id);
-    
-    if (!error && reservation) {
-      // Update local state for immediate feedback
-      setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-      if (selectedRes?.id === id) setSelectedRes({ ...selectedRes, status });
+    setAdminError(null);
 
-      // Enviar notificació push a l'usuari
-      try {
-        const { data: tokenData } = await supabase
-          .from("user_fcm_tokens")
-          .select("token")
-          .eq("user_id", reservation.user_id)
-          .single();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        if (tokenData?.token) {
-          const title = status === "acceptat" ? "Reserva Confirmada! ✅" : "Estat de la Reserva ❌";
-          const body = status === "acceptat" 
-            ? `Bones notícies! La teva reserva per al ${reservation.event_date} ha estat acceptada.`
-            : `Ho sentim, la teva reserva per al ${reservation.event_date} ha estat rebutjada.`;
-
-          await fetch("/api/send-notification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              token: tokenData.token,
-              title,
-              body,
-            }),
-          });
-        }
-      } catch (err) {
-        console.error("Error enviant notificació de reserva:", err);
+      if (!session?.access_token) {
+        throw new Error("Sessio caducada. Torna a iniciar sessio.");
       }
+
+      const response = await fetch("/api/admin/data", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reservationId: id, status }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "No s'ha pogut actualitzar la reserva.");
+      }
+
+      const updatedReservation = payload.reservation;
+      setReservations(prev => prev.map(r => r.id === id ? updatedReservation : r));
+      if (selectedRes?.id === id) setSelectedRes(updatedReservation);
+    } catch (err: any) {
+      setAdminError(err.message);
     }
+
   };
 
   if (authLoading || checking) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Verificant permisos...</div>;
@@ -147,6 +169,12 @@ export default function AdminPanel() {
           </div>
         </div>
 
+        {adminError && (
+          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+            {adminError}
+          </div>
+        )}
+
         {/* Content */}
         <div className="bg-white/5 border border-white/10 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden backdrop-blur-sm min-h-[600px]">
           {activeTab === "reservations" ? (
@@ -163,7 +191,12 @@ export default function AdminPanel() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {reservations.map((res) => (
+                    {fetching && (
+                      <tr>
+                        <td colSpan={5} className="p-12 text-center text-gray-500 italic text-sm">Carregant reserves...</td>
+                      </tr>
+                    )}
+                    {!fetching && reservations.map((res) => (
                       <tr key={res.id} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="p-6">
                           <div className="font-bold text-sm">{res.full_name}</div>
@@ -215,7 +248,7 @@ export default function AdminPanel() {
                         </td>
                       </tr>
                     ))}
-                    {reservations.length === 0 && (
+                    {!fetching && reservations.length === 0 && (
                       <tr>
                         <td colSpan={5} className="p-12 text-center text-gray-500 italic text-sm">No s'han trobat reserves</td>
                       </tr>
@@ -311,6 +344,7 @@ function ChatInterface({ messages, onRefresh, selectedUser, setSelectedUser }: {
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sendError, setSendError] = useState<string | null>(null);
 
   // Group messages by user_id
   const chatGroups = messages.reduce((acc, msg) => {
@@ -344,44 +378,38 @@ function ChatInterface({ messages, onRefresh, selectedUser, setSelectedUser }: {
     e.preventDefault();
     if (!reply.trim() || !selectedUser || sending) return;
     setSending(true);
+    setSendError(null);
 
-    // 1. Guardar el mensaje en la base de datos
-    const { error } = await supabase.from("messages").insert([{
-      user_id: selectedUser,
-      sender_name: "DJ Posaxa (Admin)",
-      message: reply,
-      is_admin_reply: true
-    }]);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!error) {
-      // 2. Intentar enviar notificación push
-      try {
-        // Obtener el token FCM del usuario destinatario
-        const { data: tokenData } = await supabase
-          .from("user_fcm_tokens")
-          .select("token")
-          .eq("user_id", selectedUser)
-          .single();
+      if (!session?.access_token) {
+        throw new Error("Sessio caducada. Torna a iniciar sessio.");
+      }
 
-        if (tokenData?.token) {
-          await fetch("/api/send-notification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              token: tokenData.token,
-              title: "Nou missatge de DJ Posaxa",
-              body: reply.substring(0, 50) + (reply.length > 50 ? "..." : ""),
-            }),
-          });
-        }
-      } catch (err) {
-        console.error("Error enviando notificación push:", err);
+      const response = await fetch("/api/admin/data", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: selectedUser, message: reply }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "No s'ha pogut enviar la resposta.");
       }
 
       setReply("");
       onRefresh();
+    } catch (err: any) {
+      setSendError(err.message);
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   return (
@@ -439,6 +467,9 @@ function ChatInterface({ messages, onRefresh, selectedUser, setSelectedUser }: {
               ))}
             </div>
             <form onSubmit={handleSendReply} className="p-3 md:p-4 bg-black/40 border-t border-white/10 flex gap-2">
+              {sendError && (
+                <p className="absolute -mt-8 text-[10px] text-red-300">{sendError}</p>
+              )}
               <input 
                 type="text" 
                 value={reply}

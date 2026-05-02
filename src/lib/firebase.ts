@@ -23,14 +23,36 @@ if (typeof window !== "undefined") {
 export { app, messaging };
 
 export const requestForToken = async () => {
-  if (!messaging) return null;
+  if (!messaging || typeof window === "undefined") return null;
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    console.warn("Aquest navegador no suporta notificacions push web.");
+    return null;
+  }
+
+  const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+  if (!vapidKey) {
+    console.warn("Falta NEXT_PUBLIC_FIREBASE_VAPID_KEY al .env.local.");
+    return null;
+  }
+  if (vapidKey.length < 80) {
+    console.warn(
+      "NEXT_PUBLIC_FIREBASE_VAPID_KEY parece demasiado corta. Firebase Web necesita la clave publica de Web Push certificates, no la privada."
+    );
+    return null;
+  }
   
   try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      console.warn("Permis de notificacions denegat o pendent.");
+      return null;
+    }
+
     // Registro manual del Service Worker para mayor estabilidad en Next.js
     const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
     
     const currentToken = await getToken(messaging, {
-      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      vapidKey,
       serviceWorkerRegistration: registration
     });
 

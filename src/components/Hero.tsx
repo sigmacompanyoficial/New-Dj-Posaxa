@@ -31,7 +31,7 @@ export default function Hero() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
-          <h1 className="text-4xl sm:text-6xl md:text-[8rem] lg:text-[10rem] font-black uppercase tracking-tighter leading-[0.9] mb-6 mix-blend-difference text-white-pure w-full break-words">
+          <h1 className="text-4xl sm:text-7xl md:text-[8rem] lg:text-[10rem] font-black uppercase tracking-tighter leading-[0.85] mb-6 mix-blend-difference text-white-pure w-full break-words">
             DJ POSAXA
           </h1>
         </motion.div>
@@ -40,7 +40,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="text-lg md:text-2xl text-gray-400 max-w-2xl mx-auto font-light tracking-wide mb-12 px-2"
+          className="text-base md:text-2xl text-gray-400 max-w-2xl mx-auto font-light tracking-wide mb-10 px-4"
         >
           Experiències musicals inoblidables. Connexió pura amb el públic.
         </motion.p>

@@ -15,7 +15,8 @@ import {
   Lock,
   ChevronRight,
   Clock,
-  MapPin
+  MapPin,
+  Globe
 } from "lucide-react";
 
 export default function PerfilPage() {
@@ -366,6 +367,84 @@ function PerfilContent() {
                           Actualitzar
                         </button>
                       </form>
+                    </div>
+
+                    <hr className="border-white/5" />
+
+                    {/* Notifications Settings */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-6">
+                        <Bell size={18} className="text-gray-400" />
+                        <h4 className="font-bold uppercase tracking-widest text-[11px] md:text-sm">Notificacions</h4>
+                      </div>
+                      <div className="space-y-4">
+                        {[
+                          { id: 'email_notif', label: 'Notificacions per Email', desc: 'Rebre avisos sobre reserves i missatges.' },
+                          { id: 'push_notif', label: 'Notificacions Push', desc: 'Alertes en temps real al teu navegador.' },
+                        ].map((item) => (
+                          <div key={item.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-widest mb-1">{item.label}</p>
+                              <p className="text-[10px] text-gray-500 uppercase">{item.desc}</p>
+                            </div>
+                            <div className="w-10 h-5 bg-white/10 rounded-full relative cursor-pointer">
+                              <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <hr className="border-white/5" />
+
+                    {/* Privacy Settings */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-6">
+                        <Lock size={18} className="text-gray-400" />
+                        <h4 className="font-bold uppercase tracking-widest text-[11px] md:text-sm">Privacitat</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-widest mb-1">Perfil Públic</p>
+                            <p className="text-[10px] text-gray-500 uppercase">Permetre que altres vegin el teu perfil.</p>
+                          </div>
+                          <div className="w-10 h-5 bg-white/10 rounded-full relative cursor-pointer">
+                            <div className="absolute left-1 top-1 w-3 h-3 bg-white/30 rounded-full"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr className="border-white/5" />
+
+                    {/* Language Settings */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-6">
+                        <Globe size={18} className="text-gray-400" />
+                        <h4 className="font-bold uppercase tracking-widest text-[11px] md:text-sm">Idioma</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { code: 'ca', name: 'Català', flag: '🇦🇩' },
+                          { code: 'es', name: 'Castellano', flag: '🇪🇸' },
+                          { code: 'en', name: 'English', flag: '🇬🇧' },
+                          { code: 'fr', name: 'Français', flag: '🇫🇷' },
+                          { code: 'ar', name: 'العربية', flag: '🇲🇦' },
+                        ].map((lang) => (
+                          <button
+                            key={lang.code}
+                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                              lang.code === 'ca' 
+                                ? 'bg-white text-black border-white' 
+                                : 'bg-white/5 border-white/10 hover:bg-white/10 text-gray-400'
+                            }`}
+                          >
+                            <span className="text-sm font-bold">{lang.name}</span>
+                            <span className="text-xl">{lang.flag}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <hr className="border-white/5" />

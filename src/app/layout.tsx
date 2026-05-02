@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { Providers } from "@/components/Providers";
 import NotificationManager from "@/components/NotificationManager";
+import CookieBanner from "@/components/CookieBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,7 +53,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ca" data-scroll-behavior="smooth">
+    <html lang="ca" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${inter.className} bg-black-deep text-white-pure antialiased overflow-x-hidden selection:bg-white-pure selection:text-black-deep`}>
         <Providers>
           <NotificationManager />
@@ -62,6 +63,7 @@ export default function RootLayout({
           <div className="hidden md:block">
             <Footer />
           </div>
+          <CookieBanner />
         </Providers>
       </body>
     </html>
