@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ POSAXA | Promo Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; overflow: hidden; color: white; }
+        .phone-frame {
+            width: 380px;
+            height: 780px;
+            border: 12px solid #222;
+            border-radius: 50px;
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+        }
+        .notch {
+            width: 150px;
+            height: 30px;
+            background: #222;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+        .cursor {
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        .google-bar {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #dfe1e5;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .web-content { color: white; background: #050505; height: 100%; display: none; }
+        .gradient-text { background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <!-- Cursor Global -->
+    <div id="cursor" class="cursor"></div>
+
+    <!-- Main Phone Frame -->
+    <div class="phone-frame scale-75 md:scale-100">
+        <div class="notch"></div>
+        
+        <!-- SCENE 1: GOOGLE -->
+        <div id="scene-google" class="h-full w-full bg-white p-6 flex flex-col pt-20">
+            <div class="flex justify-center mb-8">
+                <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="120" alt="Google">
+            </div>
+            <div class="google-bar rounded-full h-12 flex items-center px-4 gap-3 mb-8">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <div id="search-text" class="text-gray-800 text-sm"></div>
+                <div id="typing-cursor" class="w-[2px] h-4 bg-blue-500 animate-pulse"></div>
+            </div>
+
+            <!-- Google Results (Hidden initially) -->
+            <div id="google-results" class="space-y-6 opacity-0">
+                <div class="space-y-1">
+                    <p class="text-[10px] text-gray-600">https://djposaxa.com</p>
+                    <h3 id="main-result" class="text-blue-700 text-lg font-medium leading-tight">DJ POSAXA | DJ Professional a Granollers i Barcelona</h3>
+                    <p class="text-[11px] text-gray-700">Reserva el millor DJ per a les teves festes i esdeveniments. Música 100% personalitzada...</p>
+                </div>
+                <div class="space-y-1 opacity-50">
+                    <p class="text-[10px] text-gray-600">https://instagram.com › dj.posaxa</p>
+                    <h3 class="text-blue-700 text-lg font-medium leading-tight">DJ POSAXA (@dj.posaxa) • Instagram photos and videos</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 2: WEBSITE -->
+        <div id="scene-web" class="web-content relative overflow-y-auto hide-scrollbar">
+            <!-- Navbar Mockup -->
+            <div class="sticky top-0 z-50 bg-black/80 backdrop-blur-md p-4 border-b border-white/10 flex justify-between items-center">
+                <span class="text-xs font-black tracking-widest">DJ POSAXA</span>
+                <div id="menu-btn" class="space-y-1 cursor-pointer">
+                    <div class="w-4 h-[2px] bg-white"></div>
+                    <div class="w-4 h-[2px] bg-white"></div>
+                </div>
+            </div>
+
+            <!-- Home Content -->
+            <div id="web-home" class="p-6 space-y-10">
+                <div class="py-20 text-center space-y-4">
+                    <h1 class="text-4xl font-black uppercase tracking-tighter leading-none">Música <br> <span class="gradient-text">Inoblidable</span></h1>
+                    <p class="text-gray-500 text-xs uppercase tracking-widest">Granollers · Barcelona</p>
+                    <div class="w-12 h-[1px] bg-white/20 mx-auto"></div>
+                </div>
+                <div class="aspect-video bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-xs text-gray-600 uppercase tracking-widest">Vídeo de Sessió</div>
+                <div class="space-y-4">
+                    <div class="h-40 bg-white/5 rounded-3xl border border-white/10"></div>
+                    <div class="h-40 bg-white/5 rounded-3xl border border-white/10"></div>
+                </div>
+            </div>
+
+            <!-- Gallery Content -->
+            <div id="web-gallery" class="p-6 space-y-6 hidden">
+                <h2 class="text-2xl font-black uppercase tracking-tighter">Galeria</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="aspect-square bg-white/10 rounded-2xl"></div>
+                    <div class="aspect-square bg-white/10 rounded-2xl"></div>
+                    <div class="aspect-square bg-white/10 rounded-2xl"></div>
+                    <div class="aspect-square bg-white/10 rounded-2xl"></div>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div id="web-profile" class="p-6 space-y-6 hidden">
+                <h2 class="text-2xl font-black uppercase tracking-tighter">Inicia Sessió</h2>
+                <div class="space-y-4">
+                    <div id="input-user" class="bg-white/5 border border-white/10 p-4 rounded-2xl text-xs text-gray-500">Nom d'usuari</div>
+                    <div id="input-pass" class="bg-white/5 border border-white/10 p-4 rounded-2xl text-xs text-gray-500">********</div>
+                    <div id="login-btn" class="bg-white text-black p-4 rounded-2xl text-center text-xs font-black uppercase tracking-widest">Entrar</div>
+                </div>
+
+                <!-- Review (Success) -->
+                <div id="review-section" class="pt-10 space-y-4 opacity-0">
+                    <h3 class="font-bold uppercase text-[10px] tracking-widest text-gray-500">Escriu una ressenya</h3>
+                    <div id="review-box" class="bg-white/5 border border-white/10 p-4 rounded-2xl h-24 text-xs text-gray-400">Brutal la sessió d'ahir! Recomanat 100%...</div>
+                    <div id="submit-review" class="bg-white/10 text-white p-3 rounded-xl text-center text-[10px] font-bold uppercase tracking-widest">Publicar</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cursor = document.getElementById('cursor');
+        const tl = gsap.timeline();
+
+        // Helper to move cursor
+        function moveCursor(x, y, duration = 1) {
+            return tl.to(cursor, { display: 'block', x: x, y: y, duration: duration, ease: "power2.inOut" });
+        }
+
+        function clickCursor() {
+            return tl.to(cursor, { scale: 0.8, duration: 0.1 })
+                     .to(cursor, { scale: 1, duration: 0.1 });
+        }
+
+        // --- ANIMATION START ---
+        
+        // 1. TYPING GOOGLE
+        tl.to("#search-text", {
+            duration: 1.5,
+            text: { value: "dj posaxa" },
+            delay: 1,
+            onUpdate: () => {
+                document.getElementById('search-text').innerHTML = "dj posaxa";
+            }
+        });
+
+        tl.to("#google-results", { opacity: 1, y: -20, duration: 0.5, delay: 0.5 });
+
+        // 2. CLICK FIRST RESULT
+        moveCursor(200, 350, 1.5);
+        clickCursor();
+        
+        tl.to("#scene-google", { opacity: 0, duration: 0.5 })
+          .set("#scene-google", { display: 'none' })
+          .set("#scene-web", { display: 'block' })
+          .from("#scene-web", { opacity: 0, duration: 0.5 });
+
+        // 3. SCROLL HOME
+        tl.to("#scene-web", { scrollTo: 400, duration: 2, delay: 0.5 });
+
+        // 4. NAVIGATE TO GALLERY
+        moveCursor(350, 100, 1);
+        clickCursor();
+        tl.set("#web-home", { display: 'none' })
+          .set("#web-gallery", { display: 'block' })
+          .from("#web-gallery", { opacity: 0, duration: 0.5 });
+        
+        tl.to("#scene-web", { scrollTo: 200, duration: 1.5 });
+
+        // 5. NAVIGATE TO PROFILE
+        moveCursor(350, 100, 1);
+        clickCursor();
+        tl.set("#web-gallery", { display: 'none' })
+          .set("#web-profile", { display: 'block' })
+          .from("#web-profile", { opacity: 0, duration: 0.5 });
+
+        // 6. LOGIN ANIMATION
+        moveCursor(150, 300, 1);
+        clickCursor();
+        tl.to("#input-user", { color: 'white', textContent: "SigmaUser", duration: 0.5 });
+        
+        moveCursor(150, 380, 0.5);
+        clickCursor();
+        tl.to("#input-pass", { color: 'white', textContent: "••••••••", duration: 0.5 });
+
+        moveCursor(150, 460, 0.5);
+        clickCursor();
+        tl.to("#login-btn", { scale: 0.95, backgroundColor: "#ccc", duration: 0.1 })
+          .to("#login-btn", { scale: 1, backgroundColor: "#fff", duration: 0.1 });
+
+        // 7. WRITE REVIEW
+        tl.to("#review-section", { opacity: 1, y: -10, duration: 0.5, delay: 0.5 });
+        moveCursor(150, 600, 1);
+        clickCursor();
+        tl.to("#review-box", { color: 'white', textContent: "Brutal la sessió d'ahir! Recomanat 100%...", duration: 1 });
+
+        moveCursor(150, 700, 0.5);
+        clickCursor();
+        tl.to("#submit-review", { backgroundColor: "green", color: "white", textContent: "Publicat!", duration: 0.5 });
+
+        // FINAL FADE
+        tl.to(".phone-frame", { scale: 1.1, duration: 2, ease: "power2.out" });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/TextPlugin.min.js"></script>
+</body>
+</html>

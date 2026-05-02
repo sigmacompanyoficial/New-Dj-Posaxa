@@ -24,7 +24,7 @@ export default function EditorialSection() {
             <h2 className="text-sm tracking-widest uppercase text-gray-500 mb-6 bg-white/5 inline-block w-fit px-4 py-1 rounded-full border border-white/10">
               Sobre Mi
             </h2>
-            <h3 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+            <h3 className="text-4xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-[0.9] bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
               EN QUÈ<br />EM CENTRO
             </h3>
 

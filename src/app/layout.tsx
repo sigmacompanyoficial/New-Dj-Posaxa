@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { Providers } from "@/components/Providers";
+import NotificationManager from "@/components/NotificationManager";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -54,6 +55,7 @@ export default function RootLayout({
     <html lang="ca" data-scroll-behavior="smooth">
       <body className={`${inter.className} bg-black-deep text-white-pure antialiased overflow-x-hidden selection:bg-white-pure selection:text-black-deep`}>
         <Providers>
+          <NotificationManager />
           <Navbar />
           <main className="pb-20 md:pb-0">{children}</main>
           <MobileBottomNav />

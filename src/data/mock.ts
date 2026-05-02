@@ -9,6 +9,25 @@ export const NAV_LINKS = [
 
 export const EVENTS = [
   {
+    id: "la-garriga-2026",
+    title: "La Garriga 2026",
+    date: "Abril 2026",
+    location: "La Garriga",
+    description: "Una nit màgica amb tota la gent de La Garriga. Energia al màxim i connexió total.",
+    image: "/Fotos/eventos/La garriga 2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
+    category: "Festa Major",
+    images: [
+      "/Fotos/eventos/La garriga 2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
+      "/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg",
+      "/Fotos/eventos/La garriga 2026/fd365fd7-b7a9-40d8-8fc5-3479a48611ff.jpeg",
+      "/Fotos/eventos/La garriga 2026/03d8e638-f8e1-4faf-8ab7-2b7b59296ea6.jpeg",
+      "/Fotos/eventos/La garriga 2026/04216c90-2dca-4108-92cb-8dac967d79a4.jpeg",
+      "/Fotos/eventos/La garriga 2026/5c3a732c-6c63-47f7-8d54-d7c7ff79e7af.jpeg",
+      "/Fotos/eventos/La garriga 2026/f0658cfd-6040-401e-bcdd-3d3be0e17d04.jpeg",
+      "/Fotos/eventos/La garriga 2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
+    ]
+  },
+  {
     id: "carnaval-2026",
     title: "Carnaval 2026",
     date: "Febrer 2026",
@@ -20,11 +39,7 @@ export const EVENTS = [
       "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg",
       "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0052.jpg",
       "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0054.jpg",
-      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0056.jpg",
-      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0058.jpg",
-      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0060.jpg",
-      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0062.jpg",
-      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0064.jpg",
+      "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0056.jpg"
     ],
     videos: [
       "/Fotos/eventos/carnaval-2026/VID-20260214-WA0094.mp4",
@@ -37,15 +52,13 @@ export const EVENTS = [
     date: "2025",
     location: "PNC",
     description: "Sessió de música disco, funk i hits atemporals que van fer cremar la pista.",
-    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-0.jpg",
+    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-11.jpg",
     category: "Clubbing",
     images: [
       "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-0.jpg",
-      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg",
-      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-2.jpg",
-      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-3.jpg",
-      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-10.jpg",
       "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-11.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-2.jpg",
+      "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-3.jpg"
     ]
   },
   {
@@ -54,7 +67,7 @@ export const EVENTS = [
     date: "Juliol 2025",
     location: "Granollers",
     description: "Energia pura i connexió total amb el públic jove al festival Musiknviu.",
-    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-15.jpg", // Placeholder until video cover is fixed
+    image: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-16.jpg", 
     category: "Festival",
     images: [
       "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-16.jpg",

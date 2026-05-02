@@ -23,11 +23,19 @@ const GRA_JOVE_VIDEOS = [
   "IMG_2443.mov", "IMG_2445.mov", "IMG_2449.mov", "IMG_2450.mov"
 ];
 
+const LA_GARRIGA_PHOTOS = [
+  "0ceeb844-a69d-4e14-b5b4-cac5eae91d65", "6861b1eb-9cb7-49b3-ba22-8f04e78fcde5", "fd365fd7-b7a9-40d8-8fc5-3479a48611ff",
+  "03d8e638-f8e1-4faf-8ab7-2b7b59296ea6", "04216c90-2dca-4108-92cb-8dac967d79a4", "5c3a732c-6c63-47f7-8d54-d7c7ff79e7af",
+  "f0658cfd-6040-401e-bcdd-3d3be0e17d04", "30bd7efc-b56e-4f8d-a265-d0f7476c273a", "02b8db73-e60c-409e-abeb-7307a8b72827",
+  "03b43304-4fb6-4fce-8202-3bbe3bec02f9", "0c097135-46e1-45a1-9182-50a67aa24d79", "101970c9-47e7-469e-b8cb-eb2133ab92bc"
+];
+
 const POSTERS = [
   "dj-posaxa-poster.jpg", "dj-posaxa-montserrat-2026.png", "sessions-can-torrents.png"
 ];
 
 export default function GaleriaPage() {
+  const [activeEvent, setActiveEvent] = useState<string>("garriga");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [allImages, setAllImages] = useState<string[]>([]);
 
@@ -54,145 +62,174 @@ export default function GaleriaPage() {
     setSelectedImage(allImages[prevIndex]);
   };
 
+  const EVENTS_LIST = [
+    { id: "garriga", title: "La Garriga 26", cover: `/Fotos/eventos/La garriga 2026/${LA_GARRIGA_PHOTOS[0]}.jpeg` },
+    { id: "carnaval", title: "Carnaval 26", cover: `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg` },
+    { id: "disco", title: "Disco Inferno", cover: `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg` },
+    { id: "gra", title: "Gra Jove", cover: `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-16.jpg` },
+    { id: "posters", title: "Pòsters", cover: `/Fotos/posters/dj-posaxa-poster.jpg` },
+  ];
+
   return (
     <div className="bg-[#050505] text-white min-h-screen selection:bg-white selection:text-black">
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden border-b border-white/10">
+      <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/70 to-[#050505] z-10" />
           <img 
-            src="/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg" 
-            className="w-full h-full object-cover opacity-50"
+            src="/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg" 
+            className="w-full h-full object-cover opacity-30"
             alt="Galeria"
           />
         </div>
-        <div className="relative z-10 text-center px-6 mt-20">
+        <div className="relative z-10 text-center px-6 mt-10">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-[6rem] lg:text-[8rem] font-black uppercase tracking-tighter leading-none mb-4"
+            className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-4"
           >
             GALERIA
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-gray-400 text-lg md:text-2xl uppercase tracking-widest font-bold"
-          >
-            Els records de les millors sessions
-          </motion.p>
+          <p className="text-gray-500 text-sm md:text-xl uppercase tracking-widest font-bold">
+            Selecciona un esdeveniment per veure els records
+          </p>
         </div>
       </section>
 
-      {/* Navigation Links inside Gallery */}
-      <div className="sticky top-[70px] z-30 bg-[#050505]/90 backdrop-blur-md border-b border-white/10 py-4 px-6 overflow-x-auto hide-scrollbar">
-        <div className="container mx-auto flex gap-6 md:justify-center whitespace-nowrap">
-          <a href="#carnaval" className="text-gray-400 hover:text-white uppercase text-sm font-bold tracking-widest transition-colors">Carnaval 26</a>
-          <a href="#disco" className="text-gray-400 hover:text-white uppercase text-sm font-bold tracking-widest transition-colors">Disco Inferno</a>
-          <a href="#gra" className="text-gray-400 hover:text-white uppercase text-sm font-bold tracking-widest transition-colors">Gra Jove</a>
-          <a href="#posters" className="text-gray-400 hover:text-white uppercase text-sm font-bold tracking-widest transition-colors">Posters</a>
+      {/* Event Selector */}
+      <div className="bg-[#050505] border-b border-white/10 py-6 overflow-x-auto hide-scrollbar">
+        <div className="container mx-auto flex gap-4 px-6 md:justify-center">
+          {EVENTS_LIST.map((event) => (
+            <button
+              key={event.id}
+              onClick={() => setActiveEvent(event.id)}
+              className={`group relative shrink-0 w-32 md:w-48 aspect-video rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                activeEvent === event.id ? "border-white scale-105 shadow-lg shadow-white/10" : "border-white/10 opacity-50 hover:opacity-80"
+              }`}
+            >
+              <img src={event.cover} className="w-full h-full object-cover" alt={event.title} />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-tighter text-center px-2">
+                  {event.title}
+                </span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-20 flex flex-col gap-32">
-        
-        {/* CARNAVAL 26 */}
-        <section id="carnaval" className="scroll-mt-[150px]">
-          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight mb-12 pl-6 border-l-4 border-white">Carnaval 2026 (NAUB1)</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {CARNAVAL_VIDEOS.map((vid, idx) => (
-              <video 
-                key={idx} 
-                src={`/Fotos/eventos/carnaval-2026/${vid}`} 
-                controls 
-                className="w-full aspect-[4/3] bg-black/50 rounded-[2rem] border border-white/10"
-              />
-            ))}
-          </div>
+      <div className="container mx-auto px-6 py-12 md:py-20 min-h-[60vh]">
+        <AnimatePresence mode="wait">
+          {activeEvent === "garriga" && (
+            <motion.section 
+              key="garriga"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white text-blue-300">La Garriga 2026</h2>
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                {LA_GARRIGA_PHOTOS.map((num) => {
+                  const src = `/Fotos/eventos/La garriga 2026/${num}.jpeg`;
+                  return (
+                    <div key={num} onClick={() => openLightbox(src, LA_GARRIGA_PHOTOS.map(n => `/Fotos/eventos/La garriga 2026/${n}.jpeg`))} className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group border border-white/5">
+                      <img src={src} className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          )}
 
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-            {CARNAVAL_PHOTOS.map((num) => {
-              const src = `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-${num}.jpg`;
-              const fullList = CARNAVAL_PHOTOS.map(n => `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-${n}.jpg`);
-              return (
-                <div 
-                  key={num} 
-                  className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group"
-                  onClick={() => openLightbox(src, fullList)}
-                >
-                  <img src={src} alt="Carnaval 2026" className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-                </div>
-              );
-            })}
-          </div>
-        </section>
+          {activeEvent === "carnaval" && (
+            <motion.section 
+              key="carnaval"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white">Carnaval 2026 (NAUB1)</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {CARNAVAL_VIDEOS.map((vid, idx) => (
+                  <video key={idx} src={`/Fotos/eventos/carnaval-2026/${vid}`} controls className="w-full aspect-[4/3] bg-black/50 rounded-[2rem] border border-white/10" />
+                ))}
+              </div>
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                {CARNAVAL_PHOTOS.map((num) => {
+                  const src = `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-${num}.jpg`;
+                  return (
+                    <div key={num} onClick={() => openLightbox(src, CARNAVAL_PHOTOS.map(n => `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-${n}.jpg`))} className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group">
+                      <img src={src} className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          )}
 
-        {/* DISCO INFERNO */}
-        <section id="disco" className="scroll-mt-[150px]">
-          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight mb-12 pl-6 border-l-4 border-white">Festa Major: Disco Inferno XS</h2>
-          
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-            {DISCO_INFERNO_PHOTOS.map((num) => {
-              const src = `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-${num}.jpg`;
-              const fullList = DISCO_INFERNO_PHOTOS.map(n => `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-${n}.jpg`);
-              return (
-                <div 
-                  key={num} 
-                  className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group"
-                  onClick={() => openLightbox(src, fullList)}
-                >
-                  <img src={src} alt="Disco Inferno" className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
-                </div>
-              );
-            })}
-          </div>
-        </section>
+          {activeEvent === "disco" && (
+            <motion.section 
+              key="disco"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white">Disco Inferno XS</h2>
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                {DISCO_INFERNO_PHOTOS.map((num) => {
+                  const src = `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-${num}.jpg`;
+                  return (
+                    <div key={num} onClick={() => openLightbox(src, DISCO_INFERNO_PHOTOS.map(n => `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-${n}.jpg`))} className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group">
+                      <img src={src} className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          )}
 
-        {/* GRA JOVE */}
-        <section id="gra" className="scroll-mt-[150px]">
-          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight mb-12 pl-6 border-l-4 border-white">Gra Jove (MusiKnviu)</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {GRA_JOVE_VIDEOS.map((vid, idx) => (
-              <video 
-                key={idx} 
-                src={`/Fotos/eventos/gra-jove-musiknviu-2025/${vid}`} 
-                controls 
-                className="w-full aspect-[16/9] md:aspect-auto h-[60vh] object-cover bg-black/50 rounded-[2rem] border border-white/10"
-              />
-            ))}
-          </div>
-        </section>
+          {activeEvent === "gra" && (
+            <motion.section 
+              key="gra"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white">Gra Jove (MusiKnviu)</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {GRA_JOVE_VIDEOS.map((vid, idx) => (
+                  <video key={idx} src={`/Fotos/eventos/gra-jove-musiknviu-2025/${vid}`} controls className="w-full aspect-[16/9] md:aspect-auto h-[60vh] object-cover bg-black/50 rounded-[2rem] border border-white/10" />
+                ))}
+              </div>
+            </motion.section>
+          )}
 
-        {/* POSTERS */}
-        <section id="posters" className="scroll-mt-[150px]">
-          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight mb-12 pl-6 border-l-4 border-white">Pòsters</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {POSTERS.map((poster, idx) => {
-              const src = `/Fotos/posters/${poster}`;
-              const fullList = POSTERS.map(p => `/Fotos/posters/${p}`);
-              return (
-                <div 
-                  key={idx} 
-                  className="relative overflow-hidden rounded-[2rem] aspect-[4/5] cursor-pointer group border border-white/10 bg-white/5"
-                  onClick={() => openLightbox(src, fullList)}
-                >
-                  <div className="absolute top-4 left-4 z-10 bg-white text-black text-xs font-black uppercase px-4 py-1 rounded-full shadow-xl">
-                    Pòster
-                  </div>
-                  <img src={src} alt="Poster" className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
+          {activeEvent === "posters" && (
+            <motion.section 
+              key="posters"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white">Pòsters</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {POSTERS.map((poster, idx) => {
+                  const src = `/Fotos/posters/${poster}`;
+                  return (
+                    <div key={idx} onClick={() => openLightbox(src, POSTERS.map(p => `/Fotos/posters/${p}`))} className="relative overflow-hidden rounded-[2rem] aspect-[4/5] cursor-pointer group border border-white/10 bg-white/5">
+                      <img src={src} className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* LIGHTBOX */}

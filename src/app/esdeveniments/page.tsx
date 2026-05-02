@@ -129,6 +129,37 @@ export default function EsdevenimentsPage() {
 
         <div className="container mx-auto relative z-10 flex flex-col gap-32">
 
+          {/* EVENT: La Garriga 2026 */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7">
+              <FadeIn>
+                <ParallaxImage
+                  src="/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg"
+                  alt="La Garriga 2026"
+                  className="aspect-[4/3] md:aspect-[16/10]"
+                />
+              </FadeIn>
+            </div>
+            <div className="lg:col-span-5">
+              <FadeIn delay={0.2}>
+                <div className="inline-block px-4 py-1 rounded-full border border-blue-400/20 text-xs font-bold uppercase tracking-widest mb-6 bg-blue-400/5 backdrop-blur-md text-blue-300">
+                  Abril 2026
+                </div>
+                <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tight mb-6">
+                  La Garriga 2026
+                </h3>
+                <p className="text-lg text-gray-400 leading-relaxed mb-6">
+                  Una de les millors nits del 2026. La gent de La Garriga va respondre amb una energia increïble, creant una connexió única des de la primera cançó fins a l'últim beat.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Open Air</span>
+                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Reggaeton</span>
+                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Full Energy</span>
+                </div>
+              </FadeIn>
+            </div>
+          </div>
+
           {/* EVENT: Carnaval */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5 order-2 lg:order-1">
@@ -147,8 +178,8 @@ export default function EsdevenimentsPage() {
             <div className="lg:col-span-7 order-1 lg:order-2">
               <FadeIn delay={0.2}>
                 <ParallaxImage
-                  src="/Fotos/posters/dj-posaxa-poster.jpg"
-                  alt="Carnaval 2026 Poster"
+                  src="/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg"
+                  alt="Carnaval 2026"
                   className="aspect-[4/3] md:aspect-[16/10]"
                 />
               </FadeIn>
@@ -160,7 +191,7 @@ export default function EsdevenimentsPage() {
             <div className="lg:col-span-7">
               <FadeIn>
                 <ParallaxImage
-                  src="/Fotos/posters/dj-posaxa-montserrat-2026.png"
+                  src="/Fotos/eventos/La garriga 2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
                   alt="Festes Montserrat 2026"
                   className="aspect-[4/3] md:aspect-[16/10]"
                 />

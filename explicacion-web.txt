@@ -1,0 +1,19 @@
+Explicacion de la web DJ POSAXA
+
+Esta web es una pagina profesional para DJ POSAXA, un DJ enfocado en fiestas, eventos, festivales y sesiones en Granollers, Barcelona y alrededores. Su objetivo principal es presentar su marca personal, mostrar su trayectoria y facilitar que cualquier persona o entidad pueda contactar con el DJ para pedir presupuesto o reservar una actuacion.
+
+La pagina de inicio funciona como una presentacion visual de DJ POSAXA. Incluye secciones de bienvenida, informacion sobre su estilo, filosofia musical, estadisticas de experiencia, eventos destacados, galeria visual, proceso de reserva, momentos detras de las escenas, trayectoria, reseñas y llamadas a la accion para contactar o contratar sus servicios.
+
+La web tambien tiene una seccion de eventos donde se muestran actuaciones anteriores, como Carnaval 2026, Disco Inferno XS y Gra Jove Musiknviu. Cada evento sirve para enseñar fotos, videos y momentos importantes de las sesiones, transmitiendo la energia del publico y el ambiente de cada fiesta.
+
+La galeria permite ver contenido visual del DJ: imagenes de actuaciones, sesiones, carteles y material promocional. Esta parte ayuda a reforzar la imagen profesional de DJ POSAXA y a enseñar como se viven sus eventos.
+
+La seccion de precios y reservas no usa tarifas fijas, porque cada evento puede necesitar cosas distintas: duracion, equipo tecnico, ubicacion, numero de asistentes o estilo musical. Por eso la web incluye un formulario para solicitar un presupuesto personalizado. El usuario puede indicar sus datos, la fecha, el lugar, la duracion del evento, el numero de personas y preferencias musicales.
+
+La web cuenta con autenticacion de usuarios. Una persona puede registrarse, iniciar sesion y acceder a su perfil. Desde el perfil puede consultar sus solicitudes de reserva, ver el estado de sus eventos y hablar directamente con DJ POSAXA mediante un chat.
+
+Tambien existe una parte de administracion para usuarios autorizados. Desde ahi se pueden gestionar reservas, mensajes y la actividad relacionada con los clientes, lo que convierte la web en una herramienta practica de gestion y no solo en una pagina informativa.
+
+Ademas, el proyecto incluye una demo promocional en formato movil. Esta demo simula como un usuario busca "dj posaxa" en Google, entra en la web, navega por la pagina, ve la galeria, inicia sesion y escribe una reseña. Sirve como una animacion o pieza de marketing para enseñar rapidamente la experiencia de uso de la web.
+
+En resumen, la web de DJ POSAXA es una plataforma moderna para promocionar sus servicios como DJ, mostrar sus actuaciones, generar confianza con imagenes y reseñas, recibir solicitudes de presupuesto y mantener comunicacion directa con los clientes.

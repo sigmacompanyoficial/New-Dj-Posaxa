@@ -31,7 +31,7 @@ export default function Hero() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="w-full"
         >
-          <h1 className="text-5xl sm:text-6xl md:text-[8rem] lg:text-[10rem] font-black uppercase tracking-tighter leading-none mb-6 mix-blend-difference text-white-pure w-full break-words">
+          <h1 className="text-4xl sm:text-6xl md:text-[8rem] lg:text-[10rem] font-black uppercase tracking-tighter leading-[0.9] mb-6 mix-blend-difference text-white-pure w-full break-words">
             DJ POSAXA
           </h1>
         </motion.div>

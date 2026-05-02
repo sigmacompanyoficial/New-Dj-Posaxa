@@ -59,7 +59,7 @@ export default function PhilosophySection() {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black-deep px-4 text-4xl text-gray-600">
                 &ldquo;
               </div>
-              <p className="text-2xl md:text-3xl font-serif italic text-white-pure leading-relaxed">
+              <p className="text-xl md:text-3xl font-serif italic text-white-pure leading-relaxed">
                 El meu objectiu és que cada beat ressoni al teu pit i que cada baixada et faci vibrar fins a l&apos;ànima.
               </p>
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-black-deep px-4 text-4xl text-gray-600">

@@ -14,7 +14,7 @@ export default function VibeSection() {
           transition={{ duration: 0.6 }}
           className="mb-16 text-center"
         >
-          <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-widest text-white-pure mb-4">
+          <h2 className="text-3xl md:text-6xl font-bold uppercase tracking-widest text-white-pure mb-4">
             EL QUE EM DEFINEIX
           </h2>
           <div className="w-24 h-1 bg-white-pure mx-auto"></div>
