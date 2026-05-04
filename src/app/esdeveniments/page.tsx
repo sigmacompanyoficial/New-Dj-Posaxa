@@ -134,7 +134,7 @@ export default function EsdevenimentsPage() {
             <div className="lg:col-span-7">
               <FadeIn>
                 <ParallaxImage
-                  src="/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg"
+                  src="/Fotos/eventos/la-garriga-2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg"
                   alt="La Garriga 2026"
                   className="aspect-[4/3] md:aspect-[16/10]"
                 />
@@ -191,7 +191,7 @@ export default function EsdevenimentsPage() {
             <div className="lg:col-span-7">
               <FadeIn>
                 <ParallaxImage
-                  src="/Fotos/eventos/La garriga 2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
+                  src="/Fotos/eventos/la-garriga-2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
                   alt="Festes Montserrat 2026"
                   className="aspect-[4/3] md:aspect-[16/10]"
                 />

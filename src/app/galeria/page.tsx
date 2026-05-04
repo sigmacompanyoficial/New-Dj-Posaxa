@@ -63,7 +63,7 @@ export default function GaleriaPage() {
   };
 
   const EVENTS_LIST = [
-    { id: "garriga", title: "La Garriga 26", cover: `/Fotos/eventos/La garriga 2026/${LA_GARRIGA_PHOTOS[0]}.jpeg` },
+    { id: "garriga", title: "La Garriga 26", cover: `/Fotos/eventos/la-garriga-2026/${LA_GARRIGA_PHOTOS[0]}.jpeg` },
     { id: "carnaval", title: "Carnaval 26", cover: `/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0050.jpg` },
     { id: "disco", title: "Disco Inferno", cover: `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-1.jpg` },
     { id: "gra", title: "Gra Jove", cover: `/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-16.jpg` },
@@ -77,7 +77,7 @@ export default function GaleriaPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/70 to-[#050505] z-10" />
           <img 
-            src="/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg" 
+            src="/Fotos/eventos/la-garriga-2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg" 
             className="w-full h-full object-cover opacity-30"
             alt="Galeria"
           />
@@ -131,9 +131,9 @@ export default function GaleriaPage() {
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight pl-6 border-l-4 border-white text-blue-300">La Garriga 2026</h2>
               <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
                 {LA_GARRIGA_PHOTOS.map((num) => {
-                  const src = `/Fotos/eventos/La garriga 2026/${num}.jpeg`;
+                  const src = `/Fotos/eventos/la-garriga-2026/${num}.jpeg`;
                   return (
-                    <div key={num} onClick={() => openLightbox(src, LA_GARRIGA_PHOTOS.map(n => `/Fotos/eventos/La garriga 2026/${n}.jpeg`))} className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group border border-white/5">
+                    <div key={num} onClick={() => openLightbox(src, LA_GARRIGA_PHOTOS.map(n => `/Fotos/eventos/la-garriga-2026/${n}.jpeg`))} className="relative overflow-hidden rounded-[1.5rem] break-inside-avoid cursor-pointer group border border-white/5">
                       <img src={src} className="w-full h-auto transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                     </div>
                   );

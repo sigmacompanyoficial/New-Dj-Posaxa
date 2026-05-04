@@ -14,17 +14,17 @@ export const EVENTS = [
     date: "Abril 2026",
     location: "La Garriga",
     description: "Una nit màgica amb tota la gent de La Garriga. Energia al màxim i connexió total.",
-    image: "/Fotos/eventos/La garriga 2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
+    image: "/Fotos/eventos/la-garriga-2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
     category: "Festa Major",
     images: [
-      "/Fotos/eventos/La garriga 2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
-      "/Fotos/eventos/La garriga 2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg",
-      "/Fotos/eventos/La garriga 2026/fd365fd7-b7a9-40d8-8fc5-3479a48611ff.jpeg",
-      "/Fotos/eventos/La garriga 2026/03d8e638-f8e1-4faf-8ab7-2b7b59296ea6.jpeg",
-      "/Fotos/eventos/La garriga 2026/04216c90-2dca-4108-92cb-8dac967d79a4.jpeg",
-      "/Fotos/eventos/La garriga 2026/5c3a732c-6c63-47f7-8d54-d7c7ff79e7af.jpeg",
-      "/Fotos/eventos/La garriga 2026/f0658cfd-6040-401e-bcdd-3d3be0e17d04.jpeg",
-      "/Fotos/eventos/La garriga 2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
+      "/Fotos/eventos/la-garriga-2026/0ceeb844-a69d-4e14-b5b4-cac5eae91d65.jpeg",
+      "/Fotos/eventos/la-garriga-2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg",
+      "/Fotos/eventos/la-garriga-2026/fd365fd7-b7a9-40d8-8fc5-3479a48611ff.jpeg",
+      "/Fotos/eventos/la-garriga-2026/03d8e638-f8e1-4faf-8ab7-2b7b59296ea6.jpeg",
+      "/Fotos/eventos/la-garriga-2026/04216c90-2dca-4108-92cb-8dac967d79a4.jpeg",
+      "/Fotos/eventos/la-garriga-2026/5c3a732c-6c63-47f7-8d54-d7c7ff79e7af.jpeg",
+      "/Fotos/eventos/la-garriga-2026/f0658cfd-6040-401e-bcdd-3d3be0e17d04.jpeg",
+      "/Fotos/eventos/la-garriga-2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
     ]
   },
   {

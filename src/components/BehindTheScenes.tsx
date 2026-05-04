@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 const BTS_PHOTOS = [
-  { src: "/Fotos/Carnaval 26/dj-posaxa-carnaval-2026-festa-0039.jpg", alt: "Carnaval 2026 Preparació" },
-  { src: "/Fotos/dj-posaxa-disco-inferno-pnc-9.jpg", alt: "Disco Inferno PNC" },
-  { src: "/Fotos/Carnaval 26/dj-posaxa-carnaval-2026-festa-0046.jpg", alt: "Carnaval 2026" },
-  { src: "/Fotos/dj-posaxa-disco-inferno-pnc-12.jpg", alt: "Disco Inferno PNC 12" },
-  { src: "/Fotos/Carnaval 26/dj-posaxa-carnaval-2026-festa-0086.jpg", alt: "Carnaval 2026" },
-  { src: "/Fotos/dj-posaxa-disco-inferno-pnc-14.jpg", alt: "Disco Inferno PNC 14" },
+  { src: "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0039.jpg", alt: "Carnaval 2026 Preparació" },
+  { src: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-9.jpg", alt: "Disco Inferno PNC" },
+  { src: "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0046.jpg", alt: "Carnaval 2026" },
+  { src: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-12.jpg", alt: "Disco Inferno PNC 12" },
+  { src: "/Fotos/eventos/carnaval-2026/dj-posaxa-carnaval-2026-festa-0086.jpg", alt: "Carnaval 2026" },
+  { src: "/Fotos/eventos/disco-inferno-xs-2025/dj-posaxa-disco-inferno-pnc-14.jpg", alt: "Disco Inferno PNC 14" },
 ];
 
 export default function BehindTheScenes() {
