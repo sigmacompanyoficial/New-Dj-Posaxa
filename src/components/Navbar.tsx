@@ -9,15 +9,35 @@ import { NAV_LINKS } from "@/data/mock";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
+  const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      const path = window.location.pathname;
+      const isHome = path === "/";
+      const scrollY = window.scrollY;
+      
+      if (isHome) {
+        // On home, hide until past animation threshold
+        const threshold = window.innerHeight * 3.5;
+        setIsVisible(scrollY > threshold);
+        setIsScrolled(scrollY > threshold + 100);
+      } else {
+        // On other pages, show and handle scroll background
+        setIsVisible(true);
+        setIsScrolled(scrollY > 50);
+      }
+    };
+    
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (!isVisible) return null;
 
   return (
     <header

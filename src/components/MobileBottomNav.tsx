@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User, Image as ImageIcon, Music, DollarSign, Home } from "lucide-react";
@@ -8,6 +9,21 @@ import { useAuth } from "@/context/AuthContext";
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isHome = window.location.pathname === "/";
+      if (isHome) {
+        setIsVisible(window.scrollY > window.innerHeight * 3.5);
+      } else {
+        setIsVisible(true);
+      }
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems = [
     { label: "Inici", href: "/", icon: <Home size={24} /> },
@@ -16,6 +32,8 @@ export default function MobileBottomNav() {
     { label: "Mashups", href: "/#mashups", icon: <Music size={24} /> },
     { label: "Preus", href: "/preus", icon: <DollarSign size={24} /> },
   ];
+
+  if (!isVisible) return null;
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-[#050505]/90 backdrop-blur-xl border-t border-white/10 pb-safe pt-2 px-4 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">

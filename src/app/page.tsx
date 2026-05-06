@@ -1,4 +1,4 @@
-import Hero from "@/components/Hero";
+import SequenceAnimation from "@/components/SequenceAnimation";
 import EditorialSection from "@/components/EditorialSection";
 import PhilosophySection from "@/components/PhilosophySection";
 import StatsSection from "@/components/StatsSection";
@@ -16,7 +16,7 @@ import CTASection from "@/components/CTASection";
 export default function Home() {
   return (
     <>
-      <Hero />
+      <SequenceAnimation />
       <EditorialSection />
       <PhilosophySection />
       <StatsSection />
