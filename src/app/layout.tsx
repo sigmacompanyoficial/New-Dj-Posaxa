@@ -1,0 +1,105 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import { Providers } from "@/components/Providers";
+import NotificationManager from "@/components/NotificationManager";
+import CookieBanner from "@/components/CookieBanner";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: "DJ POSAXA | DJ Professional a Granollers i Barcelona",
+  description: "Reserva el millor DJ per a les teves festes, esdeveniments i festivals. Música personalitzada, equip professional i l'energia que la teva festa necessita.",
+  keywords: ["DJ Granollers", "DJ Barcelona", "DJ festes majors", "DJ casaments", "DJ esdeveniments", "DJ Posaxa", "música en viu"],
+  authors: [{ name: "DJ Posaxa" }],
+  creator: "Sigma Company",
+  openGraph: {
+    title: "DJ POSAXA | Experiències Musicals Inoblidables",
+    description: "Sessió de DJ professional per a tot tipus d'esdeveniments.",
+    url: "https://djposaxa.com",
+    siteName: "DJ POSAXA",
+    images: [
+      {
+        url: "/Fotos/dj-posaxa-logo.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "ca_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DJ POSAXA",
+    description: "DJ Professional a Granollers",
+    images: ["/Fotos/dj-posaxa-logo.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icons/icon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "mask-icon", url: "/icons/icon-512x512.png" },
+    ],
+  },
+  manifest: "/manifest.json",
+  verification: {
+    google: "2jHpnfOH-dy0mc6c6VkefIaXKW1YkmFfvC5kVyKylMs",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "DJ Posaxa",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ca" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        {/* PWA theme color — black for all platforms */}
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
+        {/* iOS full-screen app support */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="DJ Posaxa" />
+        {/* Viewport with safe area support for iPhone notch / Dynamic Island */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+        {/* Microsoft Tiles */}
+        <meta name="msapplication-TileColor" content="#000000" />
+        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+        <meta name="msapplication-config" content="none" />
+        {/* Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body className={`${inter.className} bg-black-deep text-white-pure antialiased overflow-x-hidden selection:bg-white-pure selection:text-black-deep`}>
+        <Providers>
+          <NotificationManager />
+          <Navbar />
+          <main className="pb-20 md:pb-0">{children}</main>
+          <MobileBottomNav />
+          <div className="hidden md:block">
+            <Footer />
+          </div>
+          <CookieBanner />
+        </Providers>
+      </body>
+    </html>
+  );
+}
