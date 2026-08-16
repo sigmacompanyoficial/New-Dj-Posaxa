@@ -1,23 +1,60 @@
 import { NextResponse } from "next/server";
 
+// Server-side cache for lightning-fast repeat searches (query -> { results, timestamp })
+const searchCache = new Map<string, { results: any[]; expiry: number }>();
+const CACHE_TTL_MS = 1000 * 60 * 60 * 2; // 2 hours
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q")?.trim();
+  const rawQuery = searchParams.get("q")?.trim() || "";
 
-  if (!query || query.length < 2) {
+  if (!rawQuery || rawQuery.length < 2) {
     return NextResponse.json({ results: [] });
   }
 
-  // 1. Try Deezer API first (highest reliability, native MP3 audio previews, Latin/Urban coverage)
+  const query = rawQuery.toLowerCase();
+
+  // 1. Check in-memory server cache
+  const cached = searchCache.get(query);
+  if (cached && Date.now() < cached.expiry) {
+    return NextResponse.json(
+      { results: cached.results, cached: true },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
+        },
+      }
+    );
+  }
+
+  // Helper to store in cache
+  const saveToCache = (results: any[]) => {
+    if (searchCache.size > 500) {
+      // Evict old entries if cache grows
+      const now = Date.now();
+      for (const [k, v] of searchCache.entries()) {
+        if (now > v.expiry) searchCache.delete(k);
+      }
+      if (searchCache.size > 500) searchCache.clear();
+    }
+    searchCache.set(query, { results, expiry: Date.now() + CACHE_TTL_MS });
+  };
+
+  // 2. Try Deezer API first (with 2.5s strict timeout)
   try {
-    const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=12`;
+    const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(rawQuery)}&limit=10`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
     const response = await fetch(deezerUrl, {
-      next: { revalidate: 1800 },
+      signal: controller.signal,
+      next: { revalidate: 3600 },
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; DJPosaxaApp/1.0)",
         Accept: "application/json",
       },
     });
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();
@@ -38,26 +75,39 @@ export async function GET(request: Request) {
           source: "deezer",
         }));
 
-        return NextResponse.json({ results });
+        saveToCache(results);
+        return NextResponse.json(
+          { results },
+          {
+            headers: {
+              "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
+            },
+          }
+        );
       }
     }
   } catch (err) {
-    console.warn("Deezer search failed, trying iTunes fallback:", err);
+    // Timeout or network error on Deezer, seamlessly proceed to iTunes
   }
 
-  // 2. Fallback to iTunes Search API (with ES store for optimal Spanish / Catalan music matching)
+  // 3. Fallback to iTunes Search API (with 2.5s timeout)
   try {
     const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(
-      query
-    )}&entity=song&limit=12&country=ES&media=music`;
+      rawQuery
+    )}&entity=song&limit=10&country=ES&media=music`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
     const response = await fetch(itunesUrl, {
-      next: { revalidate: 1800 },
+      signal: controller.signal,
+      next: { revalidate: 3600 },
       headers: {
         "User-Agent": "DJPosaxaApp/1.0",
         Accept: "application/json",
       },
     });
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();
@@ -75,7 +125,15 @@ export async function GET(request: Request) {
           source: "itunes",
         }));
 
-        return NextResponse.json({ results });
+        saveToCache(results);
+        return NextResponse.json(
+          { results },
+          {
+            headers: {
+              "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
+            },
+          }
+        );
       }
     }
   } catch (error: any) {

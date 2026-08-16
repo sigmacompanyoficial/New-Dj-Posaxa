@@ -97,8 +97,6 @@ export const requestForToken = async () => {
     return null;
   }
 };
-
-
 export const onMessageListener = () =>
   new Promise((resolve) => {
     if (!messaging) return;

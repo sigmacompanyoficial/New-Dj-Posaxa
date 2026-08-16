@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missatge no vàlid." }, { status: 400 });
   }
 
-  const cleanMessage = message.trim().slice(0, 1000); // Prevent overflow payload
+  const cleanMessage = message.trim().slice(0, 1000);
 
   const { data, error } = await adminClient
     .from("messages")

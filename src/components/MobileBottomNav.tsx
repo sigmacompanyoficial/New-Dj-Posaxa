@@ -26,11 +26,11 @@ export default function MobileBottomNav() {
   }, []);
 
   const navItems = [
-    { label: "Inici", href: "/", icon: <Home size={24} /> },
-    { label: "Perfil", href: user ? "/perfil" : "/auth/login", icon: <User size={24} /> },
-    { label: "Galeria", href: "/galeria", icon: <ImageIcon size={24} /> },
-    { label: "Mashups", href: "/#mashups", icon: <Music size={24} /> },
-    { label: "Preus", href: "/preus", icon: <DollarSign size={24} /> },
+    { label: "Inici", href: "/", icon: <Home size={22} /> },
+    { label: "Peticions", href: "/peticiones-canciones", icon: <Music size={22} />, highlight: true },
+    { label: "Galeria", href: "/galeria", icon: <ImageIcon size={22} /> },
+    { label: "Preus", href: "/preus", icon: <DollarSign size={22} /> },
+    { label: "Perfil", href: user ? "/perfil" : "/auth/login", icon: <User size={22} /> },
   ];
 
   if (!isVisible) return null;

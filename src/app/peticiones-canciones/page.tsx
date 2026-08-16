@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Music, 
@@ -13,14 +13,17 @@ import {
   Send, 
   Clock, 
   Radio, 
-  Volume2,
-  VolumeX,
-  X,
-  AlertCircle,
-  Loader2,
-  Bell,
-  BellRing,
-  Flame
+  Volume2, 
+  VolumeX, 
+  X, 
+  AlertCircle, 
+  Loader2, 
+  BellRing, 
+  Flame, 
+  Check, 
+  Headphones,
+  Zap,
+  TrendingUp
 } from "lucide-react";
 import { requestForToken } from "@/lib/firebase";
 
@@ -45,6 +48,24 @@ interface SongRequestItem {
   status: "pending" | "played" | "rejected";
   created_at: string;
 }
+
+// Popular mobile quick search tags for 1-tap search without virtual keyboard hassle
+const QUICK_SUGGESTIONS = [
+  "🔥 Top Hits",
+  "Reggaeton",
+  "Tech House",
+  "Bad Bunny",
+  "Quevedo",
+  "Rauw Alejandro",
+  "Feid",
+  "Bizarrap",
+  "Rosalía",
+  "Morad",
+  "Pop 2000s"
+];
+
+// In-memory client cache to make repeat searches instantaneous (0ms)
+const clientSearchCache = new Map<string, SongResult[]>();
 
 export default function SongRequestsPage() {
   // Search states
@@ -84,19 +105,11 @@ export default function SongRequestsPage() {
 
   // Recent requests feed
   const [recentRequests, setRecentRequests] = useState<SongRequestItem[]>([]);
-  const [loadingRecent, setLoadingRecent] = useState(true);
+  const [loadingRecent, setLoadingRecent] = useState(false);
 
-  // Check notification permission and initialize token on mount
+  // Non-blocking initialization on mount
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "granted") {
-        setNotificationsEnabled(true);
-        requestForToken().then((tok) => {
-          if (tok) setFcmToken(tok);
-        });
-      }
-    }
-
+    // 1. Check local cooldown
     const lastRequest = localStorage.getItem("dj_posaxa_last_request_time");
     if (lastRequest) {
       const elapsed = Math.floor((Date.now() - parseInt(lastRequest, 10)) / 1000);
@@ -105,47 +118,30 @@ export default function SongRequestsPage() {
       }
     }
 
+    // 2. Fetch recent requests lazily without blocking
     fetchRecentRequests();
 
-    // Initialize global audio element
-    if (!audioRef.current && typeof window !== "undefined") {
-      const audio = new Audio();
-      audio.preload = "auto";
-      audio.crossOrigin = "anonymous";
-      
-      audio.onwaiting = () => setAudioBuffering(true);
-      audio.onplaying = () => setAudioBuffering(false);
-      audio.oncanplay = () => setAudioBuffering(false);
-      
-      audio.ontimeupdate = () => {
-        if (audio.duration) {
-          setAudioProgress((audio.currentTime / audio.duration) * 100);
+    // 3. Defer notification token request so main thread stays light on mobile
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined" && "Notification" in window) {
+        if (Notification.permission === "granted") {
+          setNotificationsEnabled(true);
+          requestForToken().then((tok) => {
+            if (tok) setFcmToken(tok);
+          }).catch(() => {});
         }
-      };
+      }
+    }, 1500);
 
-      audio.onended = () => {
-        setPlayingPreviewId(null);
-        setAudioProgress(0);
-        setAudioBuffering(false);
-      };
-
-      audio.onerror = () => {
-        setPlayingPreviewId(null);
-        setAudioBuffering(false);
-        setAudioProgress(0);
-        setAudioNotice("Vista prèvia d'àudio no disponible per a aquest tema.");
-        setTimeout(() => setAudioNotice(null), 4000);
-      };
-
-      audioRef.current = audio;
-    }
-
-    // Interval to poll status changes for user's own requests (In-App Live Alert)
+    // 4. Smart polling for status changes (only if user has active pending requests and tab is visible)
     const pollInterval = setInterval(() => {
-      checkMyRequestsStatus();
-    }, 10000);
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        checkMyRequestsStatus();
+      }
+    }, 15000);
 
     return () => {
+      clearTimeout(timer);
       clearInterval(pollInterval);
       if (audioRef.current) {
         audioRef.current.pause();
@@ -163,7 +159,7 @@ export default function SongRequestsPage() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Check if any of my submitted songs changed status
+  // Check if any submitted songs changed status
   const checkMyRequestsStatus = async () => {
     try {
       const stored = localStorage.getItem("dj_posaxa_my_requests");
@@ -171,17 +167,21 @@ export default function SongRequestsPage() {
       const myRequests: { id: string; title: string; artist: string; lastStatus: string }[] = JSON.parse(stored);
       if (!Array.isArray(myRequests) || myRequests.length === 0) return;
 
+      const hasPending = myRequests.some((m) => m.lastStatus === "pending");
+      if (!hasPending) return;
+
       const res = await fetch("/api/song-requests");
       const data = await res.json();
       if (!data.requests) return;
 
       const updatedStored = [...myRequests];
+      let stateChanged = false;
 
       data.requests.forEach((req: SongRequestItem) => {
         const myItem = updatedStored.find((m) => m.id === req.id);
         if (myItem && myItem.lastStatus === "pending" && req.status !== "pending") {
-          // Status has changed! Trigger in-app live alert
           myItem.lastStatus = req.status;
+          stateChanged = true;
 
           if (req.status === "played") {
             setLiveSongAlert({
@@ -190,7 +190,7 @@ export default function SongRequestsPage() {
               artist: req.artist_name,
             });
             if (typeof navigator !== "undefined" && navigator.vibrate) {
-              navigator.vibrate([200, 100, 200]);
+              try { navigator.vibrate([200, 100, 200]); } catch (e) {}
             }
           } else if (req.status === "rejected") {
             setLiveSongAlert({
@@ -202,10 +202,12 @@ export default function SongRequestsPage() {
         }
       });
 
-      localStorage.setItem("dj_posaxa_my_requests", JSON.stringify(updatedStored));
-      setRecentRequests(data.requests.slice(0, 8));
+      if (stateChanged) {
+        localStorage.setItem("dj_posaxa_my_requests", JSON.stringify(updatedStored));
+        setRecentRequests(data.requests.slice(0, 8));
+      }
     } catch (e) {
-      console.warn("Could not check status of my requests:", e);
+      // Quietly ignore polling failures
     }
   };
 
@@ -213,34 +215,49 @@ export default function SongRequestsPage() {
   const fetchRecentRequests = async () => {
     try {
       setLoadingRecent(true);
-      const res = await fetch("/api/song-requests");
+      const res = await fetch("/api/song-requests?limit=8");
       const data = await res.json();
       if (data.requests) {
-        setRecentRequests(data.requests.slice(0, 8));
+        setRecentRequests(data.requests);
       }
     } catch (e) {
-      console.error("Error fetching recent requests:", e);
+      console.warn("Could not load recent requests:", e);
     } finally {
       setLoadingRecent(false);
     }
   };
 
-  // Request push notification permission
-  const handleEnableNotifications = async () => {
-    try {
-      const token = await requestForToken();
-      if (token) {
-        setFcmToken(token);
-        setNotificationsEnabled(true);
-        setAudioNotice("🔔 Notificacions activades! T'avisarem quan soni.");
-        setTimeout(() => setAudioNotice(null), 4000);
-      }
-    } catch (err) {
-      console.error("Error requesting notification token:", err);
+  // Perform search with local client cache for instant mobile responsiveness
+  const performSearch = useCallback(async (searchTerm: string) => {
+    const clean = searchTerm.replace("🔥", "").trim();
+    if (clean.length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
     }
-  };
 
-  // Debounced search
+    const cacheKey = clean.toLowerCase();
+    if (clientSearchCache.has(cacheKey)) {
+      setResults(clientSearchCache.get(cacheKey)!);
+      setSearching(false);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/song-requests/search?q=${encodeURIComponent(clean)}`);
+      const data = await res.json();
+      const list = data.results || [];
+      clientSearchCache.set(cacheKey, list);
+      setResults(list);
+    } catch (err) {
+      console.warn("Search network error:", err);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  // Debounced typing search
   useEffect(() => {
     if (manualMode || selectedSong) return;
     if (query.trim().length < 2) {
@@ -249,26 +266,25 @@ export default function SongRequestsPage() {
       return;
     }
 
-    setSearching(true);
-    const timeout = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/song-requests/search?q=${encodeURIComponent(query.trim())}`);
-        const data = await res.json();
-        setResults(data.results || []);
-      } catch (err) {
-        console.error("Search error:", err);
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
+    const clean = query.trim().toLowerCase();
+    // If in cache, show immediately without waiting for debounce
+    if (clientSearchCache.has(clean)) {
+      setResults(clientSearchCache.get(clean)!);
+      setSearching(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      performSearch(query);
+    }, 250);
 
     return () => clearTimeout(timeout);
-  }, [query, manualMode, selectedSong]);
+  }, [query, manualMode, selectedSong, performSearch]);
 
   // Audio preview toggle
   const togglePreview = async (id: string, previewUrl: string | null) => {
     if (!previewUrl) {
-      setAudioNotice("Vista prèvia no disponible per a aquesta cançó.");
+      setAudioNotice("Vista prèvia no disponible per a aquest tema.");
       setTimeout(() => setAudioNotice(null), 3000);
       return;
     }
@@ -276,15 +292,40 @@ export default function SongRequestsPage() {
     setAudioNotice(null);
 
     if (playingPreviewId === id) {
-      if (audioRef.current) audioRef.current.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       setPlayingPreviewId(null);
       setAudioBuffering(false);
     } else {
       try {
         if (!audioRef.current) {
-          audioRef.current = new Audio();
+          const audio = new Audio();
+          audio.preload = "none";
+          audio.crossOrigin = "anonymous";
+          audio.onwaiting = () => setAudioBuffering(true);
+          audio.onplaying = () => setAudioBuffering(false);
+          audio.oncanplay = () => setAudioBuffering(false);
+          audio.ontimeupdate = () => {
+            if (audio.duration) {
+              setAudioProgress((audio.currentTime / audio.duration) * 100);
+            }
+          };
+          audio.onended = () => {
+            setPlayingPreviewId(null);
+            setAudioProgress(0);
+            setAudioBuffering(false);
+          };
+          audio.onerror = () => {
+            setPlayingPreviewId(null);
+            setAudioBuffering(false);
+            setAudioProgress(0);
+            setAudioNotice("Vista prèvia no disponible en aquest dispositiu.");
+            setTimeout(() => setAudioNotice(null), 3500);
+          };
+          audioRef.current = audio;
         }
-        
+
         audioRef.current.pause();
         audioRef.current.src = previewUrl;
         audioRef.current.load();
@@ -295,11 +336,10 @@ export default function SongRequestsPage() {
         await audioRef.current.play();
         setAudioBuffering(false);
       } catch (err: any) {
-        console.error("Error playing preview:", err);
         setPlayingPreviewId(null);
         setAudioBuffering(false);
-        setAudioNotice("No s'ha pogut reproduir l'àudio en aquest navegador.");
-        setTimeout(() => setAudioNotice(null), 4000);
+        setAudioNotice("Toca de nou per escoltar la vista prèvia.");
+        setTimeout(() => setAudioNotice(null), 3500);
       }
     }
   };
@@ -324,6 +364,26 @@ export default function SongRequestsPage() {
     setAudioProgress(0);
   };
 
+  const handleQuickChipClick = (suggestion: string) => {
+    const clean = suggestion.replace("🔥", "").trim();
+    setQuery(clean);
+    performSearch(clean);
+  };
+
+  const handleEnableNotifications = async () => {
+    try {
+      const token = await requestForToken();
+      if (token) {
+        setFcmToken(token);
+        setNotificationsEnabled(true);
+        setAudioNotice("🔔 Notificacions activades! T'avisarem quan soni.");
+        setTimeout(() => setAudioNotice(null), 3500);
+      }
+    } catch (err) {
+      console.warn("Notification enable error:", err);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -343,15 +403,6 @@ export default function SongRequestsPage() {
 
     setSubmitting(true);
 
-    // Attempt to grab FCM token if not present yet
-    let currentToken = fcmToken;
-    if (!currentToken && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      try {
-        currentToken = await requestForToken();
-        if (currentToken) setFcmToken(currentToken);
-      } catch (e) {}
-    }
-
     try {
       const response = await fetch("/api/song-requests", {
         method: "POST",
@@ -363,7 +414,7 @@ export default function SongRequestsPage() {
           preview_url: selectedSong?.previewUrl || null,
           requester_name: requesterName.trim() || "Anònim",
           notes: notes.trim() || null,
-          fcm_token: currentToken || null,
+          fcm_token: fcmToken || null,
         }),
       });
 
@@ -375,22 +426,27 @@ export default function SongRequestsPage() {
 
       setSubmittedRequest(data.request);
 
-      // Save to user's personal requests list in localStorage
-      const existing = JSON.parse(localStorage.getItem("dj_posaxa_my_requests") || "[]");
-      existing.unshift({
-        id: data.request.id,
-        title: data.request.song_title,
-        artist: data.request.artist_name,
-        lastStatus: "pending",
-      });
-      localStorage.setItem("dj_posaxa_my_requests", JSON.stringify(existing.slice(0, 20)));
+      // Save to user's local tracking list
+      try {
+        const existing = JSON.parse(localStorage.getItem("dj_posaxa_my_requests") || "[]");
+        existing.unshift({
+          id: data.request.id,
+          title: data.request.song_title,
+          artist: data.request.artist_name,
+          lastStatus: "pending",
+        });
+        localStorage.setItem("dj_posaxa_my_requests", JSON.stringify(existing.slice(0, 20)));
+        localStorage.setItem("dj_posaxa_last_request_time", Date.now().toString());
+      } catch (e) {}
 
-      localStorage.setItem("dj_posaxa_last_request_time", Date.now().toString());
       setCooldown(30);
       handleClearSelection();
       setRequesterName("");
       setNotes("");
       fetchRecentRequests();
+
+      // Scroll smoothly to confirmation if needed
+      window.scrollTo({ top: 120, behavior: "smooth" });
     } catch (err: any) {
       setErrorMsg(err.message || "Error en connectar amb el servidor.");
     } finally {
@@ -401,34 +457,38 @@ export default function SongRequestsPage() {
   const isFormValid = (selectedSong !== null || manualTitle.trim().length > 0) && cooldown === 0;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-24 md:pt-32 pb-24 px-4 md:px-6 relative overflow-hidden">
-      {/* Ambient glowing lights */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-1/3 right-10 w-[400px] h-[400px] bg-white/5 rounded-full blur-[130px] pointer-events-none" />
+    <div className="min-h-screen bg-[#050505] text-white pt-20 md:pt-28 pb-28 px-4 md:px-6 relative overflow-x-hidden selection:bg-white selection:text-black">
+      {/* High-performance CSS radial gradients (Zero GPU lag on mobile) */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0" 
+        style={{
+          background: "radial-gradient(circle at 50% 15%, rgba(220, 38, 38, 0.12) 0%, transparent 65%), radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.03) 0%, transparent 50%)",
+        }} 
+      />
 
       {/* Live In-App Notification Alert for DJ Action */}
       <AnimatePresence>
         {liveSongAlert && (
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.95 }}
+            initial={{ opacity: 0, y: -40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.95 }}
-            className={`fixed top-20 md:top-24 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-lg p-5 rounded-3xl border shadow-2xl backdrop-blur-2xl ${
+            exit={{ opacity: 0, y: -40, scale: 0.95 }}
+            className={`fixed top-16 md:top-24 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md p-4 md:p-5 rounded-3xl border shadow-2xl backdrop-blur-md ${
               liveSongAlert.type === "played"
-                ? "bg-black/90 border-green-500/50 shadow-green-500/20"
-                : "bg-black/90 border-red-500/50 shadow-red-500/20"
+                ? "bg-black/95 border-green-500/50 shadow-green-500/20"
+                : "bg-black/95 border-red-500/50 shadow-red-500/20"
             }`}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
                     liveSongAlert.type === "played"
-                      ? "bg-green-500/20 text-green-400 border border-green-500/40 animate-bounce"
+                      ? "bg-green-500/20 text-green-400 border border-green-500/40 animate-pulse"
                       : "bg-red-500/20 text-red-400 border border-red-500/40"
                   }`}
                 >
-                  {liveSongAlert.type === "played" ? <Flame size={24} /> : <X size={24} />}
+                  {liveSongAlert.type === "played" ? <Flame size={22} /> : <X size={22} />}
                 </div>
                 <div>
                   <span
@@ -438,19 +498,20 @@ export default function SongRequestsPage() {
                   >
                     {liveSongAlert.type === "played" ? "🔥 LA TEVA CANÇÓ ESTÀ SONANT!" : "❌ PETICIÓ ACTUALITZADA"}
                   </span>
-                  <h4 className="text-base font-black uppercase text-white mt-0.5">
+                  <h4 className="text-sm font-black uppercase text-white leading-tight mt-0.5">
                     {liveSongAlert.title}
                   </h4>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 mt-0.5">
                     {liveSongAlert.type === "played"
-                      ? `DJ Posaxa acaba de posar el teu tema a la pista! A ballar! 🎉`
-                      : `Ho sentim, el DJ no ha pogut posar aquesta cançó en aquesta sessió.`}
+                      ? `DJ Posaxa acaba de punxar el teu tema a la pista! A ballar! 🎉`
+                      : `El DJ no ha pogut posar aquest tema en aquesta sessió.`}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setLiveSongAlert(null)}
-                className="text-gray-400 hover:text-white p-1"
+                className="text-gray-400 hover:text-white p-1.5 touch-manipulation"
+                aria-label="Tancar avís"
               >
                 <X size={18} />
               </button>
@@ -459,53 +520,48 @@ export default function SongRequestsPage() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-3xl mx-auto relative z-10">
         {/* Header section */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10 md:mb-14"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest mb-4 backdrop-blur-md">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-[11px] font-black uppercase tracking-widest mb-3 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-            <Radio size={14} className="text-red-400" />
-            <span className="text-gray-300">Live DJ Set Request</span>
+            <Radio size={13} className="text-red-400" />
+            <span className="text-gray-200">Live DJ Set Request</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-4">
-            Demanar <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-600">Cançó</span>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white mb-3">
+            Demanar <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-500">Cançó</span>
           </h1>
 
-          <p className="text-gray-400 text-sm md:text-base max-w-xl mx-auto font-light">
-            Vols escoltar el teu tema favorit a la pista? Busca la cançó i envia la teva petició directa a la cabina de <span className="font-bold text-white">DJ Posaxa</span>. T'avisarem en directe quan soni!
+          <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-lg mx-auto font-light leading-relaxed">
+            Busca la teva cançó preferida i envia-la directa a la taula de <span className="font-bold text-white">DJ Posaxa</span>. T'avisem al mòbil quan soni!
           </p>
 
-          {/* Push Notification Opt-in Prompt */}
+          {/* Quick Notification Enable Banner */}
           {!notificationsEnabled && (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-3.5 flex justify-center">
               <button
                 type="button"
                 onClick={handleEnableNotifications}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold uppercase tracking-wider text-gray-300 hover:text-white transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 border border-white/15 text-[11px] font-bold uppercase tracking-wider text-gray-200 hover:text-white transition-all touch-manipulation"
               >
-                <BellRing size={14} className="text-yellow-400" />
-                <span>Activar avisos quan soni la meva cançó</span>
+                <BellRing size={13} className="text-yellow-400 shrink-0" />
+                <span>Activar avisos quan soni el meu tema</span>
               </button>
             </div>
           )}
-        </motion.div>
+        </div>
 
         {/* Audio Toast Notice */}
         <AnimatePresence>
           {audioNotice && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-black/90 border border-white/20 px-5 py-3 rounded-full text-xs font-bold text-gray-200 shadow-2xl backdrop-blur-md flex items-center gap-2"
+              exit={{ opacity: 0, y: -15 }}
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#111] border border-white/20 px-4 py-2.5 rounded-full text-xs font-bold text-gray-200 shadow-2xl backdrop-blur-md flex items-center gap-2"
             >
-              <VolumeX size={16} className="text-yellow-400" />
+              <VolumeX size={15} className="text-yellow-400 shrink-0" />
               <span>{audioNotice}</span>
             </motion.div>
           )}
@@ -515,37 +571,37 @@ export default function SongRequestsPage() {
         <AnimatePresence>
           {submittedRequest && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="mb-10 bg-gradient-to-br from-white/15 to-white/5 border border-white/20 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="mb-8 bg-gradient-to-br from-green-500/15 via-white/10 to-white/5 border border-green-500/30 rounded-3xl p-5 md:p-7 backdrop-blur-md shadow-2xl relative overflow-hidden"
             >
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 shrink-0">
-                  <CheckCircle2 size={36} />
+              <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 text-center sm:text-left">
+                <div className="w-14 h-14 rounded-2xl bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 shrink-0">
+                  <CheckCircle2 size={32} />
                 </div>
-                <div className="text-center md:text-left flex-1">
-                  <div className="flex items-center justify-center md:justify-start gap-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-green-400">
-                      Petició enviada amb èxit!
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-green-400">
+                      Petició rebuda amb èxit!
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase">
-                      🔔 Notificació en directe activada
+                      🔔 En cua de DJ Posaxa
                     </span>
                   </div>
-                  <h3 className="text-xl md:text-2xl font-black uppercase text-white mt-1">
+                  <h3 className="text-lg md:text-xl font-black uppercase text-white truncate">
                     {submittedRequest.song_title}
                   </h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs text-gray-300">
                     {submittedRequest.artist_name} {submittedRequest.requester_name && submittedRequest.requester_name !== "Anònim" && ` • per ${submittedRequest.requester_name}`}
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">
-                    La teva cançó està a la cua de DJ Posaxa. Rebràs una notificació instantània a la pantalla i al teu dispositiu quan el DJ la posi!
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    T'arribarà un avís a la pantalla i al teu telèfon en el moment exacte en què comenci a sonar!
                   </p>
                 </div>
                 <button
                   onClick={() => setSubmittedRequest(null)}
-                  className="px-5 py-2.5 rounded-xl bg-white text-black font-bold uppercase text-xs tracking-widest hover:scale-105 transition-transform"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white text-black font-bold uppercase text-xs tracking-widest active:scale-95 transition-transform shrink-0 touch-manipulation"
                 >
                   D'acord
                 </button>
@@ -554,147 +610,165 @@ export default function SongRequestsPage() {
           )}
         </AnimatePresence>
 
-        {/* Main Form Card */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 backdrop-blur-xl shadow-2xl mb-12">
+        {/* Main Request Form Container */}
+        <div className="bg-[#0e0e0e]/90 border border-white/15 rounded-3xl p-5 md:p-8 backdrop-blur-md shadow-2xl mb-10">
           {errorMsg && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm flex items-center gap-3"
+              className="mb-5 p-3.5 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs md:text-sm flex items-center gap-2.5"
             >
-              <AlertCircle size={20} className="shrink-0" />
+              <AlertCircle size={18} className="shrink-0" />
               <span>{errorMsg}</span>
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Song Selection Area */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Step 1: Song Search & Selection */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
-                1. Cerca la teva cançó *
-              </label>
+              <div className="flex justify-between items-center mb-2.5">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-300 flex items-center gap-1.5">
+                  <Music size={14} className="text-red-400" />
+                  1. Cerca el teu tema *
+                </label>
+                {!selectedSong && !manualMode && (
+                  <button
+                    type="button"
+                    onClick={() => setManualMode(true)}
+                    className="text-[11px] text-gray-400 hover:text-white underline touch-manipulation"
+                  >
+                    Escriure manualment
+                  </button>
+                )}
+              </div>
 
               {!selectedSong && !manualMode ? (
-                <div className="relative">
+                <div className="space-y-3">
+                  {/* Search Input with Clear Button and Instant Icon */}
                   <div className="relative flex items-center">
-                    <Search className="absolute left-4 text-gray-500 pointer-events-none" size={20} />
+                    <Search className="absolute left-4 text-gray-400 pointer-events-none" size={18} />
                     <input
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Escriu el nom de la cançó o artista (Ex: Bad Bunny, Quevedo, Morad...)"
-                      className="w-full bg-black/60 border border-white/15 rounded-2xl py-4 pl-12 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-all text-sm md:text-base font-medium"
+                      placeholder="Cerca per cançó o artista (Ex: Bad Bunny, Quevedo...)"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                      enterKeyHint="search"
+                      className="w-full bg-black/70 border border-white/20 focus:border-white rounded-2xl py-3.5 pl-11 pr-11 text-white placeholder-gray-500 focus:outline-none text-sm md:text-base font-medium transition-colors"
                     />
-                    {searching && (
-                      <div className="absolute right-4 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    )}
-                    {!searching && query.length > 0 && (
+                    {searching ? (
+                      <div className="absolute right-4 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : query.length > 0 ? (
                       <button
                         type="button"
-                        onClick={() => setQuery("")}
-                        className="absolute right-4 text-gray-500 hover:text-white p-1"
+                        onClick={() => {
+                          setQuery("");
+                          setResults([]);
+                        }}
+                        className="absolute right-3.5 p-1 text-gray-400 hover:text-white touch-manipulation"
+                        aria-label="Esborrar text"
                       >
                         <X size={18} />
                       </button>
-                    )}
+                    ) : null}
                   </div>
 
-                  {/* Autocomplete Dropdown */}
-                  <AnimatePresence>
-                    {results.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-[#0d0d0d] border border-white/15 rounded-2xl shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-white/5"
+                  {/* 1-Tap Quick Suggestions for Mobile */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar touch-pan-x">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 shrink-0 flex items-center gap-1">
+                      <Zap size={11} className="text-yellow-400" /> Idees:
+                    </span>
+                    {QUICK_SUGGESTIONS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleQuickChipClick(tag)}
+                        className="shrink-0 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 active:scale-95 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white transition-all touch-manipulation"
                       >
-                        {results.map((song) => {
-                          const isPlaying = playingPreviewId === song.id;
-                          return (
-                            <div
-                              key={song.id}
-                              onClick={() => handleSelectSong(song)}
-                              className="p-3.5 flex items-center justify-between gap-4 hover:bg-white/10 cursor-pointer transition-colors group"
-                            >
-                              <div className="flex items-center gap-3.5 min-w-0">
-                                {song.albumArt ? (
-                                  <img
-                                    src={song.albumArt}
-                                    alt={song.title}
-                                    className="w-12 h-12 rounded-xl object-cover shrink-0 border border-white/10 shadow-md"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 shrink-0">
-                                    <Music size={20} />
-                                  </div>
-                                )}
-                                <div className="truncate">
-                                  <p className="font-bold text-sm text-white group-hover:text-white truncate">
-                                    {song.title}
-                                  </p>
-                                  <p className="text-xs text-gray-400 truncate">
-                                    {song.artist} {song.album && `• ${song.album}`}
-                                  </p>
-                                </div>
-                              </div>
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
-                                {song.previewUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      togglePreview(song.id, song.previewUrl);
-                                    }}
-                                    className={`p-2.5 rounded-full border transition-all ${
-                                      isPlaying
-                                        ? "bg-white text-black border-white shadow-lg shadow-white/20"
-                                        : "bg-white/5 hover:bg-white/20 text-gray-300 hover:text-white border-white/10"
-                                    }`}
-                                    title={isPlaying ? "Pausar" : "Escoltar 30s preview"}
-                                  >
-                                    {isPlaying && audioBuffering ? (
-                                      <Loader2 size={16} className="animate-spin" />
-                                    ) : isPlaying ? (
-                                      <Pause size={16} />
-                                    ) : (
-                                      <Play size={16} />
-                                    )}
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-bold uppercase tracking-wider group-hover:bg-white group-hover:text-black transition-colors"
-                                >
-                                  Triar
-                                </button>
+                  {/* Search Results List */}
+                  {results.length > 0 && (
+                    <div className="bg-[#121212] border border-white/15 rounded-2xl overflow-hidden shadow-2xl divide-y divide-white/5 max-h-72 sm:max-h-80 overflow-y-auto">
+                      {results.map((song) => {
+                        const isPlaying = playingPreviewId === song.id;
+                        return (
+                          <div
+                            key={song.id}
+                            onClick={() => handleSelectSong(song)}
+                            className="p-3 flex items-center justify-between gap-3 hover:bg-white/10 active:bg-white/15 cursor-pointer transition-colors touch-manipulation group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {song.albumArt ? (
+                                <img
+                                  src={song.albumArt}
+                                  alt={song.title}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="w-11 h-11 rounded-xl object-cover shrink-0 border border-white/10 bg-black/40"
+                                />
+                              ) : (
+                                <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 shrink-0">
+                                  <Music size={18} />
+                                </div>
+                              )}
+                              <div className="min-w-0 truncate">
+                                <p className="font-bold text-xs sm:text-sm text-white truncate group-hover:text-white">
+                                  {song.title}
+                                </p>
+                                <p className="text-[11px] text-gray-400 truncate">
+                                  {song.artist} {song.album && `• ${song.album}`}
+                                </p>
                               </div>
                             </div>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
-                  <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
-                    <span>Cerca en directe amb àudios i portades HD</span>
-                    <button
-                      type="button"
-                      onClick={() => setManualMode(true)}
-                      className="text-gray-400 hover:text-white underline transition-colors"
-                    >
-                      No la trobes? Escriu-la manualment
-                    </button>
-                  </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {song.previewUrl && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    togglePreview(song.id, song.previewUrl);
+                                  }}
+                                  className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all touch-manipulation ${
+                                    isPlaying
+                                      ? "bg-white text-black border-white shadow-md"
+                                      : "bg-white/10 hover:bg-white/20 active:scale-90 text-gray-200 border-white/15"
+                                  }`}
+                                  title={isPlaying ? "Pausar" : "Preview 30s"}
+                                  aria-label={isPlaying ? "Pausar àudio" : "Escoltar vista prèvia"}
+                                >
+                                  {isPlaying && audioBuffering ? (
+                                    <Loader2 size={15} className="animate-spin" />
+                                  ) : isPlaying ? (
+                                    <Pause size={15} />
+                                  ) : (
+                                    <Play size={15} className="ml-0.5" />
+                                  )}
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="px-3 py-1.5 rounded-xl bg-white text-black text-[11px] font-black uppercase tracking-wider active:scale-95 transition-transform touch-manipulation"
+                              >
+                                Triar
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ) : selectedSong ? (
                 /* Selected Song Card with Dynamic Audio Player */
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-2xl p-4 md:p-5 relative overflow-hidden"
-                >
-                  {/* Audio progress bar underneath */}
+                <div className="bg-gradient-to-r from-white/15 to-white/5 border border-white/30 rounded-2xl p-4 relative overflow-hidden shadow-xl">
                   {playingPreviewId === selectedSong.id && (
                     <div className="absolute top-0 left-0 right-0 h-1 bg-white/10">
                       <div 
@@ -704,39 +778,40 @@ export default function SongRequestsPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <div className="relative shrink-0">
                         {selectedSong.albumArt ? (
                           <img
                             src={selectedSong.albumArt}
                             alt={selectedSong.title}
-                            className={`w-16 h-16 rounded-xl object-cover border border-white/20 shadow-xl ${
-                              playingPreviewId === selectedSong.id ? "ring-2 ring-white/50" : ""
+                            loading="lazy"
+                            className={`w-14 h-14 rounded-xl object-cover border border-white/20 ${
+                              playingPreviewId === selectedSong.id ? "ring-2 ring-white/60" : ""
                             }`}
                           />
                         ) : (
-                          <div className="w-16 h-16 rounded-xl bg-white/15 flex items-center justify-center text-white">
-                            <Disc size={28} className="animate-spin-slow" />
+                          <div className="w-14 h-14 rounded-xl bg-white/15 flex items-center justify-center text-white">
+                            <Disc size={24} className="animate-spin" />
                           </div>
                         )}
                       </div>
-                      <div className="truncate">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[10px] font-black uppercase tracking-widest">
+                      <div className="min-w-0 truncate">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400 text-[9px] font-black uppercase tracking-widest">
                             Seleccionada
                           </span>
                           {playingPreviewId === selectedSong.id && (
-                            <span className="flex items-center gap-1 text-[10px] text-gray-300 font-bold uppercase tracking-wider">
-                              <Volume2 size={12} className="animate-pulse text-green-400" />
+                            <span className="flex items-center gap-1 text-[9px] text-gray-300 font-bold uppercase">
+                              <Volume2 size={11} className="text-green-400 animate-pulse" />
                               Sonant preview
                             </span>
                           )}
                         </div>
-                        <h4 className="text-base md:text-lg font-black uppercase text-white truncate mt-0.5">
+                        <h4 className="text-sm sm:text-base font-black uppercase text-white truncate">
                           {selectedSong.title}
                         </h4>
-                        <p className="text-xs md:text-sm text-gray-300 truncate font-medium">
+                        <p className="text-xs text-gray-300 truncate font-medium">
                           {selectedSong.artist}
                         </p>
                       </div>
@@ -747,40 +822,38 @@ export default function SongRequestsPage() {
                         <button
                           type="button"
                           onClick={() => togglePreview(selectedSong.id, selectedSong.previewUrl)}
-                          className={`p-3 rounded-xl border transition-all ${
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all touch-manipulation ${
                             playingPreviewId === selectedSong.id
-                              ? "bg-white text-black border-white shadow-xl shadow-white/20"
-                              : "bg-white/15 hover:bg-white/25 text-white border-white/20"
+                              ? "bg-white text-black border-white shadow-lg"
+                              : "bg-white/15 hover:bg-white/25 active:scale-90 text-white border-white/20"
                           }`}
-                          title="Escoltar preview 30s"
+                          title="Escoltar preview"
+                          aria-label="Escoltar preview"
                         >
                           {playingPreviewId === selectedSong.id && audioBuffering ? (
-                            <Loader2 size={18} className="animate-spin" />
+                            <Loader2 size={16} className="animate-spin" />
                           ) : playingPreviewId === selectedSong.id ? (
-                            <Pause size={18} />
+                            <Pause size={16} />
                           ) : (
-                            <Play size={18} />
+                            <Play size={16} className="ml-0.5" />
                           )}
                         </button>
                       )}
                       <button
                         type="button"
                         onClick={handleClearSelection}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 transition-colors"
+                        className="w-10 h-10 rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 flex items-center justify-center transition-colors touch-manipulation"
                         title="Canviar cançó"
+                        aria-label="Canviar cançó"
                       >
-                        <X size={18} />
+                        <X size={16} />
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ) : (
-                /* Manual Input Form */
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-black/40 border border-white/10 rounded-2xl p-5 space-y-4"
-                >
+                /* Manual Input Form Mode */
+                <div className="bg-black/50 border border-white/15 rounded-2xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-300">
                       Entrada manual
@@ -788,13 +861,13 @@ export default function SongRequestsPage() {
                     <button
                       type="button"
                       onClick={() => setManualMode(false)}
-                      className="text-xs text-gray-400 hover:text-white underline"
+                      className="text-xs text-gray-400 hover:text-white underline touch-manipulation"
                     >
                       Tornar al cercador
                     </button>
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold uppercase text-gray-400 mb-1 block">
+                    <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 block">
                       Títol de la cançó *
                     </label>
                     <input
@@ -802,44 +875,47 @@ export default function SongRequestsPage() {
                       value={manualTitle}
                       onChange={(e) => setManualTitle(e.target.value)}
                       placeholder="Ex: Danza Kuduro / Remix especial"
-                      className="w-full bg-black/60 border border-white/15 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-white/50"
+                      autoComplete="off"
+                      className="w-full bg-black/70 border border-white/15 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold uppercase text-gray-400 mb-1 block">
+                    <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 block">
                       Artista / Productor
                     </label>
                     <input
                       type="text"
                       value={manualArtist}
                       onChange={(e) => setManualArtist(e.target.value)}
-                      placeholder="Ex: Don Omar / DJ Posaxa Bootleg"
-                      className="w-full bg-black/60 border border-white/15 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-white/50"
+                      placeholder="Ex: Don Omar / DJ Posaxa"
+                      autoComplete="off"
+                      className="w-full bg-black/70 border border-white/15 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-white"
                     />
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
 
-            {/* Requester Name & Dedication */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            {/* Step 2 & 3: Requester Name & Dedication */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-gray-300 mb-1.5">
                   2. El teu Nom o Àlies (Opcional)
                 </label>
                 <input
                   type="text"
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
-                  placeholder="Ex: Alex / La penya de Granollers"
-                  className="w-full bg-black/50 border border-white/10 rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-white/40 transition-colors"
+                  placeholder="Ex: Marc / La penya de Granollers"
+                  autoComplete="name"
                   maxLength={50}
+                  className="w-full bg-black/60 border border-white/15 rounded-xl p-3 text-white text-xs sm:text-sm focus:outline-none focus:border-white/50 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-gray-300 mb-1.5">
                   3. Dedicatòria o Nota (Opcional)
                 </label>
                 <input
@@ -847,33 +923,33 @@ export default function SongRequestsPage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Ex: Per a l'aniversari de la Laura 🎉"
-                  className="w-full bg-black/50 border border-white/10 rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-white/40 transition-colors"
                   maxLength={120}
+                  className="w-full bg-black/60 border border-white/15 rounded-xl p-3 text-white text-xs sm:text-sm focus:outline-none focus:border-white/50 transition-colors"
                 />
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-4">
+            {/* Submit Action Button */}
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={!isFormValid || submitting}
-                className="w-full relative group overflow-hidden bg-white text-black font-black uppercase tracking-widest py-4 md:py-5 rounded-2xl text-sm md:text-base hover:scale-[1.01] transition-all disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-xl shadow-white/5"
+                className="w-full bg-white text-black font-black uppercase tracking-widest py-4 rounded-2xl text-xs sm:text-sm active:scale-[0.98] transition-all disabled:opacity-40 disabled:active:scale-100 disabled:cursor-not-allowed shadow-xl touch-manipulation"
               >
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-2">
                   {submitting ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <Loader2 size={18} className="animate-spin" />
                       <span>Enviant a la cabina...</span>
                     </>
                   ) : cooldown > 0 ? (
                     <>
-                      <Clock size={18} />
+                      <Clock size={16} />
                       <span>Espera {cooldown}s per a una nova petició</span>
                     </>
                   ) : (
                     <>
-                      <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
+                      <Send size={16} />
                       <span>Enviar Petició de Cançó</span>
                     </>
                   )}
@@ -885,62 +961,64 @@ export default function SongRequestsPage() {
 
         {/* Live Requests Feed */}
         <div>
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                <Sparkles size={18} className="text-yellow-400" />
+              <h3 className="text-lg md:text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+                <Sparkles size={16} className="text-yellow-400" />
                 Peticions Recents
               </h3>
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mt-0.5">
-                Temes que s'estan demanant a la festa
+              <p className="text-[11px] text-gray-500 uppercase tracking-widest font-bold mt-0.5">
+                Temes demanats en directe a la sessió
               </p>
             </div>
             <button
               onClick={fetchRecentRequests}
-              className="text-xs text-gray-400 hover:text-white uppercase tracking-wider font-bold transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-[11px] text-gray-300 hover:text-white uppercase tracking-wider font-bold transition-all touch-manipulation"
             >
               Actualitzar
             </button>
           </div>
 
-          {loadingRecent ? (
-            <div className="text-center py-12 text-gray-500 text-sm">
+          {loadingRecent && recentRequests.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 text-xs">
               Carregant peticions en directe...
             </div>
           ) : recentRequests.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center text-gray-500 text-sm">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center text-gray-400 text-xs">
               Encara no hi ha peticions. Sigues el primer a demanar un temacle!
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {recentRequests.map((req) => {
                 const isPlaying = playingPreviewId === req.id;
                 return (
                   <div
                     key={req.id}
-                    className="bg-white/5 border border-white/10 hover:border-white/20 rounded-2xl p-4 flex items-center justify-between gap-3 transition-colors"
+                    className="bg-[#0e0e0e]/80 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between gap-3 transition-colors"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       {req.album_art ? (
                         <img
                           src={req.album_art}
                           alt={req.song_title}
-                          className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0"
+                          loading="lazy"
+                          decoding="async"
+                          className="w-11 h-11 rounded-xl object-cover border border-white/10 shrink-0 bg-black/40"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 shrink-0">
-                          <Music size={18} />
+                        <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 shrink-0">
+                          <Music size={16} />
                         </div>
                       )}
-                      <div className="truncate">
-                        <h5 className="font-bold text-sm text-white truncate">
+                      <div className="min-w-0 truncate">
+                        <h5 className="font-bold text-xs text-white truncate">
                           {req.song_title}
                         </h5>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-[11px] text-gray-400 truncate">
                           {req.artist_name}
                         </p>
                         {req.notes && (
-                          <p className="text-[11px] text-gray-500 italic truncate mt-0.5">
+                          <p className="text-[10px] text-gray-500 italic truncate mt-0.5">
                             "{req.notes}"
                           </p>
                         )}
@@ -952,18 +1030,19 @@ export default function SongRequestsPage() {
                         <button
                           type="button"
                           onClick={() => togglePreview(req.id, req.preview_url || null)}
-                          className={`p-2 rounded-full border transition-all ${
+                          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all touch-manipulation ${
                             isPlaying
                               ? "bg-white text-black border-white"
-                              : "bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white border-white/10"
+                              : "bg-white/5 hover:bg-white/20 active:scale-90 text-gray-300 border-white/10"
                           }`}
                           title="Escoltar preview"
+                          aria-label="Escoltar preview"
                         >
-                          {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                          {isPlaying ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
                         </button>
                       )}
                       <span
-                        className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full shrink-0 tracking-widest ${
+                        className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 tracking-widest ${
                           req.status === "played"
                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
                             : req.status === "rejected"
