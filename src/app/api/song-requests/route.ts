@@ -2,9 +2,48 @@ import { requireAdmin, getAdminSupabaseClient } from "@/lib/auth-guard";
 import { sendPushNotification } from "@/lib/firebase-admin";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
-// Fallback in-memory store in case Supabase table is pending migration
+// Persistent database file path for reliable local/server persistence
+const DB_FILE_PATH = path.join(process.cwd(), "src", "data", "song_requests_db.json");
+
+// In-memory fallback
 let memoryRequests: any[] = [];
+
+// Helper to safely read from persistent store
+const readPersistentStore = (): any[] => {
+  try {
+    if (fs.existsSync(DB_FILE_PATH)) {
+      const raw = fs.readFileSync(DB_FILE_PATH, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        memoryRequests = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read persistent DB file, using memory store:", e);
+  }
+  return memoryRequests;
+};
+
+// Helper to safely write to persistent store
+const writePersistentStore = (data: any[]) => {
+  try {
+    memoryRequests = data;
+    const dir = path.dirname(DB_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE_PATH, JSON.stringify(data, null, 2), "utf8");
+  } catch (e) {
+    console.warn("Could not write persistent DB file, saved to memory:", e);
+  }
+};
+
+// Initialize persistent store on startup
+readPersistentStore();
 
 // In-memory rate limiting map for spam prevention (IP -> last timestamp)
 const rateLimitMap = new Map<string, number>();
@@ -47,18 +86,34 @@ export async function GET(request: Request) {
 
       const { data, error } = await query;
       if (!error && data) {
-        return NextResponse.json({ requests: data });
+        // Sync Supabase data to persistent storage
+        if (data.length > 0) {
+          const currentStore = readPersistentStore();
+          const merged = [...data];
+          currentStore.forEach((localItem) => {
+            if (!merged.some((m) => m.id === localItem.id)) {
+              merged.push(localItem);
+            }
+          });
+          writePersistentStore(merged.slice(0, 200));
+        }
+        return NextResponse.json({ requests: data }, {
+          headers: { "Cache-Control": "no-cache, no-store, must-revalidate" }
+        });
       }
     } catch (err) {
-      console.warn("Supabase song_requests query failed, using memory fallback:", err);
+      console.warn("Supabase song_requests query failed, using persistent DB store:", err);
     }
   }
 
-  let filtered = [...memoryRequests];
+  // Use persistent store
+  let list = readPersistentStore();
   if (status && status !== "all") {
-    filtered = filtered.filter((r) => r.status === status);
+    list = list.filter((r) => r.status === status);
   }
-  return NextResponse.json({ requests: filtered.slice(0, limit) });
+  return NextResponse.json({ requests: list.slice(0, limit) }, {
+    headers: { "Cache-Control": "no-cache, no-store, must-revalidate" }
+  });
 }
 
 export async function POST(request: Request) {
@@ -117,6 +172,9 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString(),
     };
 
+    let insertedRecord = newRequest;
+
+    // Save to Supabase if configured and available
     const supabase = getSupabaseClient();
     if (supabase) {
       try {
@@ -138,16 +196,19 @@ export async function POST(request: Request) {
           .single();
 
         if (!error && data) {
-          return NextResponse.json({ success: true, request: data }, { status: 201 });
+          insertedRecord = data;
         }
       } catch (err) {
-        console.warn("Could not insert to Supabase, saving to memory fallback:", err);
+        console.warn("Could not insert to Supabase, saving to persistent store:", err);
       }
     }
 
-    // Fallback store
-    memoryRequests.unshift(newRequest);
-    return NextResponse.json({ success: true, request: newRequest }, { status: 201 });
+    // Always save to persistent database store
+    const currentList = readPersistentStore();
+    currentList.unshift(insertedRecord);
+    writePersistentStore(currentList.slice(0, 200));
+
+    return NextResponse.json({ success: true, request: insertedRecord }, { status: 201 });
   } catch (error: any) {
     console.error("Error creating song request:", error);
     return NextResponse.json(
@@ -177,6 +238,7 @@ export async function PATCH(request: Request) {
 
     let updatedRecord: any = null;
 
+    // 1. Try Supabase update
     const adminClient = getAdminSupabaseClient();
     if (adminClient) {
       try {
@@ -191,16 +253,19 @@ export async function PATCH(request: Request) {
           updatedRecord = data;
         }
       } catch (err) {
-        console.warn("Supabase update failed, updating memory fallback:", err);
+        console.warn("Supabase update failed:", err);
       }
     }
 
-    if (!updatedRecord) {
-      const index = memoryRequests.findIndex((r) => r.id === id);
-      if (index !== -1) {
-        memoryRequests[index] = { ...memoryRequests[index], status };
-        updatedRecord = memoryRequests[index];
+    // 2. Update in persistent database store
+    const currentList = readPersistentStore();
+    const index = currentList.findIndex((r) => r.id === id);
+    if (index !== -1) {
+      currentList[index] = { ...currentList[index], status };
+      if (!updatedRecord) {
+        updatedRecord = currentList[index];
       }
+      writePersistentStore(currentList);
     }
 
     if (!updatedRecord) {
@@ -256,19 +321,21 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Falta el ID de la petició." }, { status: 400 });
     }
 
+    // 1. Try Supabase delete
     const adminClient = getAdminSupabaseClient();
     if (adminClient) {
       try {
-        const { error } = await adminClient.from("song_requests").delete().eq("id", id);
-        if (!error) {
-          return NextResponse.json({ success: true });
-        }
+        await adminClient.from("song_requests").delete().eq("id", id);
       } catch (err) {
-        console.warn("Supabase delete failed, removing from memory fallback:", err);
+        console.warn("Supabase delete failed:", err);
       }
     }
 
-    memoryRequests = memoryRequests.filter((r) => r.id !== id);
+    // 2. Delete from persistent database store
+    const currentList = readPersistentStore();
+    const filtered = currentList.filter((r) => r.id !== id);
+    writePersistentStore(filtered);
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting song request:", error);

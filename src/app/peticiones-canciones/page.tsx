@@ -133,12 +133,11 @@ export default function SongRequestsPage() {
       }
     }, 1500);
 
-    // 4. Smart polling for status changes (only if user has active pending requests and tab is visible)
+    // 4. Auto-refresh recent requests and status changes every 10 seconds
     const pollInterval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        checkMyRequestsStatus();
-      }
-    }, 15000);
+      fetchRecentRequests();
+      checkMyRequestsStatus();
+    }, 10000);
 
     return () => {
       clearTimeout(timer);
@@ -966,9 +965,13 @@ export default function SongRequestsPage() {
               <h3 className="text-lg md:text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
                 <Sparkles size={16} className="text-yellow-400" />
                 Peticions Recents
+                <span className="inline-flex items-center gap-1 text-[10px] text-green-400 font-bold px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" />
+                  Live (10s)
+                </span>
               </h3>
               <p className="text-[11px] text-gray-500 uppercase tracking-widest font-bold mt-0.5">
-                Temes demanats en directe a la sessió
+                Temes demanats en directe a la sessió • S'actualitza cada 10s
               </p>
             </div>
             <button

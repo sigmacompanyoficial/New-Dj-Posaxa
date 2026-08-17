@@ -80,8 +80,8 @@ export default function AdminPanel() {
     }
   };
 
-  const fetchAdminData = async () => {
-    setFetching(true);
+  const fetchAdminData = async (isBackground = false) => {
+    if (!isBackground) setFetching(true);
     setAdminError(null);
 
     try {
@@ -107,13 +107,24 @@ export default function AdminPanel() {
       setReservations(payload.reservations ?? []);
       setMessages(payload.messages ?? []);
     } catch (err: any) {
-      setReservations([]);
-      setMessages([]);
-      setAdminError(err.message);
+      if (!isBackground) {
+        setReservations([]);
+        setMessages([]);
+        setAdminError(err.message);
+      }
     } finally {
-      setFetching(false);
+      if (!isBackground) setFetching(false);
     }
   };
+
+  // Auto-refresh admin reservations and messages every 10 seconds
+  useEffect(() => {
+    if (!isAdmin) return;
+    const interval = setInterval(() => {
+      fetchAdminData(true);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
   const updateStatus = async (id: string, status: string) => {
     setAdminError(null);
@@ -546,18 +557,18 @@ function SongRequestsAdminView({ onUpdatePendingCount }: { onUpdatePendingCount:
     onUpdatePendingCount(pending);
   }, [requests, onUpdatePendingCount]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       setActionError(null);
       const res = await fetch("/api/song-requests");
       const data = await res.json();
       const list = data.requests || [];
       setRequests(list);
     } catch (e: any) {
-      setActionError(e.message || "Error carregant peticions");
+      if (!isBackground) setActionError(e.message || "Error carregant peticions");
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
@@ -585,7 +596,8 @@ function SongRequestsAdminView({ onUpdatePendingCount }: { onUpdatePendingCount:
       audioRef.current = audio;
     }
 
-    const interval = setInterval(fetchRequests, 15000); // Polling every 15s during live set
+    // Auto-refresh song requests every 10 seconds
+    const interval = setInterval(() => fetchRequests(true), 10000);
     return () => {
       clearInterval(interval);
       if (audioRef.current) {
@@ -696,18 +708,24 @@ function SongRequestsAdminView({ onUpdatePendingCount }: { onUpdatePendingCount:
       {/* Top Stats and Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-white/10">
         <div>
-          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-            <Music size={22} className="text-red-500" />
-            Peticions de Cançons (Live Set)
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+              <Music size={22} className="text-red-500" />
+              Peticions de Cançons (Live Set)
+            </h2>
+            <span className="inline-flex items-center gap-1.5 text-[10px] text-green-400 font-bold px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/25">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-ping" />
+              Live • 10s
+            </span>
+          </div>
           <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mt-1">
-            {requests.length} peticions totals • {pendingCount} pendents de sonar
+            {requests.length} peticions totals • {pendingCount} pendents de sonar • S'actualitza sol cada 10s
           </p>
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
-            onClick={fetchRequests}
+            onClick={() => fetchRequests(false)}
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
           >

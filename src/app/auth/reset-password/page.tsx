@@ -16,37 +16,29 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      // 1. Check if there's a code in URL query params
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
+      // auth/callback already exchanged the code and set the session.
+      // We just need to verify there's an active session here.
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          setError("L'enllaç de recuperació ha caducat o no és vàlid.");
-          setSessionValid(false);
-        } else {
-          setSessionValid(true);
-        }
+      if (session) {
+        setSessionValid(true);
       } else {
-        // 2. Check if there is an active session (e.g. from hash fragment or existing auth)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setSessionValid(true);
-        } else {
-          // If no session found yet, wait for possible onAuthStateChange
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "PASSWORD_RECOVERY" || session) {
-              setSessionValid(true);
-              setError(null);
-            }
-          });
-          setTimeout(() => {
-            setCheckingSession(false);
-          }, 1500);
-          return () => subscription.unsubscribe();
-        }
+        // Listen for PASSWORD_RECOVERY event (fallback for older hash-based links)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+            setSessionValid(true);
+            setError(null);
+            subscription.unsubscribe();
+          }
+        });
+
+        // Show invalid message after 2s if still no session
+        setTimeout(() => {
+          setCheckingSession(false);
+        }, 2000);
+        return () => subscription.unsubscribe();
       }
+
       setCheckingSession(false);
     };
 

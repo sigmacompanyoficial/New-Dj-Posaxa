@@ -15,13 +15,48 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log("[firebase-messaging-sw.js] Received background message ", payload);
-  
-  const notificationTitle = payload.notification.title;
+  console.log("[firebase-messaging-sw.js] Background message received:", payload);
+
+  const title = payload.notification?.title || "DJ Posaxa";
+  const body = payload.notification?.body || "";
+  const url = payload.data?.url || "/";
+
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: "/favicon.ico", // Puedes poner un logo del DJ aquí
+    body,
+    icon: "/Fotos/dj-posaxa-logo.png",
+    badge: "/favicon.png",
+    tag: "dj-posaxa-notification",
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: { url },
+    actions: [
+      { action: "open", title: "Veure" },
+      { action: "close", title: "Tancar" }
+    ]
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, notificationOptions);
+});
+
+// Handle notification click — open or focus the app
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  if (event.action === "close") return;
+
+  const url = event.notification.data?.url || "/";
+  const fullUrl = self.location.origin + url;
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === fullUrl && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(fullUrl);
+      }
+    })
+  );
 });
