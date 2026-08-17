@@ -126,39 +126,137 @@ export default function EsdevenimentsPage() {
             2026
           </span>
         </div>
-
         <div className="container mx-auto relative z-10 flex flex-col gap-32">
 
-          {/* EVENT: La Garriga 2026 */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7">
-              <FadeIn>
-                <ParallaxImage
-                  src="/Fotos/eventos/la-garriga-2026/6861b1eb-9cb7-49b3-ba22-8f04e78fcde5.jpeg"
-                  alt="La Garriga 2026"
-                  className="aspect-[4/3] md:aspect-[16/10]"
-                />
-              </FadeIn>
+          {/* ── Abril 2026 ── */}
+
+          {/* EVENT: La Roca – Prèvia Vesprada (9 abril) */}
+          <FadeIn>
+            <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-10 md:p-14 hover:bg-white/[0.04] transition-colors">
+              <div className="inline-block px-4 py-1 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest mb-6 bg-white/5 backdrop-blur-md">
+                9 abril 2026 · 18:30–19:00h
+              </div>
+              <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-4">
+                La Roca
+              </h3>
+              <p className="text-lg text-gray-400 leading-relaxed mb-6">
+                Sessió d'obertura a La Roca del Vallès. Una prèvia de tarda per escalfar motors abans de la Vesprada principal.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Prèvia Vesprada</span>
+                <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">La Roca del Vallès</span>
+              </div>
             </div>
-            <div className="lg:col-span-5">
-              <FadeIn delay={0.2}>
-                <div className="inline-block px-4 py-1 rounded-full border border-blue-400/20 text-xs font-bold uppercase tracking-widest mb-6 bg-blue-400/5 backdrop-blur-md text-blue-300">
-                  Abril 2026
+          </FadeIn>
+
+          {/* EVENT: La Garriga 2026 (Barri Montserrat 24–25 abril) */}
+          <FadeIn>
+            <div className="bg-gradient-to-br from-blue-900/10 to-transparent border border-blue-400/10 rounded-[2rem] p-10 md:p-14 hover:bg-blue-900/[0.08] transition-colors">
+              <div className="inline-block px-4 py-1 rounded-full border border-blue-400/20 text-xs font-bold uppercase tracking-widest mb-6 bg-blue-400/5 backdrop-blur-md text-blue-300">
+                24–25 abril 2026
+              </div>
+              <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-4">
+                La Garriga — Barri Montserrat
+              </h3>
+              <p className="text-lg text-gray-400 leading-relaxed mb-6">
+                Un doblet al Barri Montserrat. Dues sessions, dos ambients, una energia arrolladora.
+              </p>
+              <ul className="text-sm text-gray-400 mb-6 flex flex-col gap-3">
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-blue-400/60 inline-block" />
+                  <span><span className="text-gray-200 font-semibold">24 abril · 21:00–23:00h</span> — Barri Montserrat, La Garriga</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-blue-400/60 inline-block" />
+                  <span><span className="text-gray-200 font-semibold">25 abril · 19:00–22:30h</span> — Barri Montserrat, La Garriga</span>
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-3">
+                <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Open Air</span>
+                <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Reggaeton</span>
+                <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Full Energy</span>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* ── Maig 2026 ── */}
+
+          {/* EVENT: Maig 2026 – grid de shows */}
+          <FadeIn>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-6 mb-4">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500">Maig 2026</span>
+                <div className="flex-1 h-[1px] bg-white/10" />
+              </div>
+
+              {/* Row 1: Club Bàsquet + Festa Blanca */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.04] transition-colors">
+                  <div className="px-3 py-1 rounded border border-white/20 text-[10px] font-bold uppercase tracking-widest mb-4 inline-block text-gray-400">
+                    9 maig · 12:00–14:00h
+                  </div>
+                  <h4 className="text-2xl font-black uppercase mb-3">Club Bàsquet Granollers</h4>
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    Sessió de migdia al Club Bàsquet Granollers. Ambient festiu per a tots els públics.
+                  </p>
                 </div>
-                <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tight mb-6">
-                  La Garriga 2026
-                </h3>
-                <p className="text-lg text-gray-400 leading-relaxed mb-6">
-                  Una de les millors nits del 2026. La gent de La Garriga va respondre amb una energia increïble, creant una connexió única des de la primera cançó fins a l'últim beat.
+
+                <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.04] transition-colors">
+                  <div className="px-3 py-1 rounded border border-white/20 text-[10px] font-bold uppercase tracking-widest mb-4 inline-block text-gray-400">
+                    9 maig · 18:00h
+                  </div>
+                  <h4 className="text-2xl font-black uppercase mb-3">Festa Blanca</h4>
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    Sessió de tarda a la Festa Blanca de Granollers. Un clàssic de l'estiu amb el millor ambient.
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 2: 15 + 16 maig */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.04] transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="px-3 py-1 rounded border border-white/20 text-[10px] font-bold uppercase tracking-widest inline-block text-gray-400">
+                      15 maig · 20:00–22:00h
+                    </div>
+                    <div className="animate-pulse bg-yellow-600/20 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest">
+                      Per confirmar
+                    </div>
+                  </div>
+                  <h4 className="text-2xl font-black uppercase mb-3">Granollers</h4>
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    Sessió de vespre a Granollers. Ubicació i detalls pendents de confirmació.
+                  </p>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.04] transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="px-3 py-1 rounded border border-white/20 text-[10px] font-bold uppercase tracking-widest inline-block text-gray-400">
+                      16 maig · 20:00–22:00h
+                    </div>
+                    <div className="animate-pulse bg-yellow-600/20 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest">
+                      Per confirmar
+                    </div>
+                  </div>
+                  <h4 className="text-2xl font-black uppercase mb-3">Granollers</h4>
+                  <p className="text-gray-400 leading-relaxed text-sm">
+                    Sessió de vespre a Granollers. Ubicació i detalls pendents de confirmació.
+                  </p>
+                </div>
+              </div>
+
+              {/* Row 3: 24 maig La Roca */}
+              <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-8 hover:bg-white/[0.04] transition-colors">
+                <div className="px-3 py-1 rounded border border-white/20 text-[10px] font-bold uppercase tracking-widest mb-4 inline-block text-gray-400">
+                  24 maig 2026
+                </div>
+                <h4 className="text-2xl font-black uppercase mb-3">La Roca – La Vesprada</h4>
+                <p className="text-gray-400 leading-relaxed text-sm">
+                  Sessió de tarda a La Roca del Vallès per a l'edició de La Vesprada. Hora per confirmar.
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Open Air</span>
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Reggaeton</span>
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Full Energy</span>
-                </div>
-              </FadeIn>
+              </div>
             </div>
-          </div>
+          </FadeIn>
 
           {/* EVENT: Carnaval */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -186,62 +284,20 @@ export default function EsdevenimentsPage() {
             </div>
           </div>
 
-          {/* EVENT: Festes del Barri Montserrat */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7">
-              <FadeIn>
-                <ParallaxImage
-                  src="/Fotos/eventos/la-garriga-2026/30bd7efc-b56e-4f8d-a265-d0f7476c273a.jpeg"
-                  alt="Festes Montserrat 2026"
-                  className="aspect-[4/3] md:aspect-[16/10]"
-                />
-              </FadeIn>
-            </div>
-            <div className="lg:col-span-5">
-              <FadeIn delay={0.2}>
-                <div className="inline-block px-4 py-1 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest mb-6 bg-white/5 backdrop-blur-md">
-                  24-25 abril 2026
-                </div>
-                <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tight mb-6">
-                  Barri de Montserrat
-                </h3>
-                <p className="text-lg text-gray-400 leading-relaxed mb-6">
-                  Un doblet per a la història de la Garriga. Divendres: una sessió d’ambient house creant l'atmosfera perfecta. Dissabte: sessió enèrgica amb reggaeton i hits per no parar de ballar.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">House</span>
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Reggaeton</span>
-                  <span className="px-3 py-1 bg-white/10 rounded-lg text-sm text-gray-300">Hits</span>
-                </div>
-              </FadeIn>
-            </div>
-          </div>
-
           {/* EVENT: Can Torrents */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <FadeIn>
-                <div className="inline-block px-4 py-1 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest mb-6 bg-white/5 backdrop-blur-md">
-                  Abril 2026 (Divendres)
-                </div>
-                <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tight mb-6">
-                  Can Torrents
-                </h3>
-                <p className="text-lg text-gray-400 leading-relaxed mb-8">
-                  Gravació de sessions d'electrònica en format multicàmera per a YouTube. Estudi de gravació en directe amb servei de barra al Porxo de Can Torrents (La Roca del Vallès).
-                </p>
-              </FadeIn>
+          <FadeIn>
+            <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-10 md:p-14 hover:bg-white/[0.04] transition-colors">
+              <div className="inline-block px-4 py-1 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest mb-6 bg-white/5 backdrop-blur-md">
+                Abril 2026 (Divendres)
+              </div>
+              <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-4">
+                Can Torrents
+              </h3>
+              <p className="text-lg text-gray-400 leading-relaxed">
+                Gravació de sessions d'electrònica en format multicàmera per a YouTube. Estudi de gravació en directe amb servei de barra al Porxo de Can Torrents (La Roca del Vallès).
+              </p>
             </div>
-            <div className="lg:col-span-7 order-1 lg:order-2">
-              <FadeIn delay={0.2}>
-                <ParallaxImage
-                  src="/Fotos/404.webp"
-                  alt="Can Torrents"
-                  className="aspect-[4/3] md:aspect-[16/10]"
-                />
-              </FadeIn>
-            </div>
-          </div>
+          </FadeIn>
 
           {/* EVENT: Cancelat (Mitja Marató) */}
           <FadeIn>

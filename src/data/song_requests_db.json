@@ -1,0 +1,26 @@
+[
+  {
+    "id": "13487989-5544-466e-ae87-3bcfb8a6ee62",
+    "song_title": "MOTINHA 2.0 (Mete Marcha)",
+    "artist_name": "DENNIS",
+    "album_art": "https://cdn-images.dzcdn.net/images/cover/097011d7b8ba57a0680b30167d835c0a/250x250-000000-80-0-0.jpg",
+    "preview_url": "https://cdnt-preview.dzcdn.net/api/1/1/c/4/f/0/c4fa2495416271d5ae4faa96645e4e78.mp3?hdnea=exp=1786934607~acl=/api/1/1/c/4/f/0/c4fa2495416271d5ae4faa96645e4e78.mp3*~data=user_id=0,application_id=42~hmac=f4ac13641abde1448d96cf0cfcdac4f59f89fbb125c61dd67858d920e3aad8af",
+    "requester_name": "Anònim",
+    "notes": null,
+    "status": "pending",
+    "created_at": "2026-08-17T02:28:33.59544+00:00",
+    "fcm_token": null
+  },
+  {
+    "id": "241220a5-28a4-429c-b634-4d91b2ef0243",
+    "song_title": "4K",
+    "artist_name": "El Alfa",
+    "album_art": "https://cdn-images.dzcdn.net/images/cover/dbb1cd92f8595380c5299dd3aaa78e04/250x250-000000-80-0-0.jpg",
+    "preview_url": "https://cdnt-preview.dzcdn.net/api/1/1/f/6/5/0/f652665e51f0f13eac17ba9300912ecf.mp3?hdnea=exp=1786934476~acl=/api/1/1/f/6/5/0/f652665e51f0f13eac17ba9300912ecf.mp3*~data=user_id=0,application_id=42~hmac=1a3574edaa5477d27314a2565653e7809e3e95910124a1d67930f54f3023c480",
+    "requester_name": "Anònim",
+    "notes": null,
+    "status": "rejected",
+    "created_at": "2026-08-17T02:27:16.157178+00:00",
+    "fcm_token": null
+  }
+]

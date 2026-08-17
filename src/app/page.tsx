@@ -1,5 +1,6 @@
 import SequenceAnimation from "@/components/SequenceAnimation";
 import EditorialSection from "@/components/EditorialSection";
+import NextShowCountdown from "@/components/NextShowCountdown";
 import PhilosophySection from "@/components/PhilosophySection";
 import StatsSection from "@/components/StatsSection";
 import MarqueeSection from "@/components/MarqueeSection";
@@ -18,6 +19,7 @@ export default function Home() {
     <>
       <SequenceAnimation />
       <EditorialSection />
+      <NextShowCountdown />
       <PhilosophySection />
       <StatsSection />
       <MarqueeSection />
