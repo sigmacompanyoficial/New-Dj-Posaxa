@@ -42,31 +42,31 @@ function CountUp({ target, suffix = "" }: { target: string; suffix?: string }) {
 
 export default function StatsSection() {
   return (
-    <section className="py-24 border-y border-white-pure/10 bg-black-deep overflow-hidden">
-      <div className="container mx-auto px-6 md:px-12">
+    <section className="py-14 sm:py-20 md:py-24 border-y border-white-pure/10 bg-black-deep overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-12 text-center"
         >
           {STATS.map((stat, idx) => (
             <motion.div
               key={idx}
               variants={fadeUp}
-              className="flex flex-col items-center justify-center gap-4 group"
+              className="flex flex-col items-center justify-center gap-2.5 sm:gap-4 group"
             >
               <motion.h4
-                className="text-5xl md:text-7xl font-bold text-white-pure"
+                className="text-3xl sm:text-5xl md:text-7xl font-bold text-white-pure"
                 whileHover={{ scale: 1.1, color: "#CFE8F7" }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <CountUp target={stat.value} />
               </motion.h4>
-              <p className="text-xs text-gray-500 uppercase tracking-widest-xl">{stat.label}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider sm:tracking-widest-xl">{stat.label}</p>
               <motion.div
-                className="w-8 h-[1px] bg-white-pure/30"
+                className="w-6 sm:w-8 h-[1px] bg-white-pure/30"
                 initial={{ scaleX: 0 }}
                 whileInView={{ scaleX: 1 }}
                 viewport={{ once: true }}

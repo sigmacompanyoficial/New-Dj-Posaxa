@@ -12,19 +12,19 @@ const fadeUp = {
 
 export default function EventsGrid() {
   return (
-    <section id="events" className="py-32 px-6 md:px-12 bg-black-deep relative z-20">
+    <section id="events" className="py-16 sm:py-24 md:py-32 px-4 sm:px-6 md:px-12 bg-black-deep relative z-20">
       <div className="container mx-auto">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUp}
-          className="mb-20 flex flex-col items-center text-center"
+          className="mb-12 sm:mb-20 flex flex-col items-center text-center"
         >
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white-pure mb-6">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter text-white-pure mb-3 sm:mb-6">
             ESDEVENIMENTS
           </h2>
-          <p className="text-gray-400 text-lg md:text-xl max-w-2xl font-light">
+          <p className="text-gray-400 text-sm sm:text-lg md:text-xl max-w-2xl font-light">
             De les primeres festes a Granollers als grans escenaris. Descobreix l'energia i els millors moments de cada sessió.
           </p>
         </motion.div>
